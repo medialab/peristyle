@@ -12,7 +12,7 @@
 * **Dictionary words**: *proportion of dictionary words vs. non-dictionary words. try proportion of capitalized dictionary words.*
 * **Named entities**: *proportion of certain entity types vs. others, e.g. Persons vs. Concepts.*
 * **Negation**: *proportion of negation (`n'`, `ne'`) in sentences.*
-* **Subjectivity**: *proportion of explicit subjective sentences (`je`, 'à mon avis` etc.).*
+* **Subjectivity**: *proportion of explicit subjective sentences (`je`, `à mon avis` etc.).*
 * **Repetition**: *proportion of repetitions (to define formally).*
 * **Bias: letter frequencies**: *frequency of each letter in the text.*
 
@@ -28,7 +28,7 @@
   * Comparison
   * Anaphore
   * Alliteration
-* Clichés
+* Clichés, common periphrases
 * Proportion of questions, exclamations.
 * Persons, singular, plurals
 * Cardinality of vocabulary, number of hapaxes
