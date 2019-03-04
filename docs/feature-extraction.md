@@ -15,3 +15,20 @@
 * **Subjectivity**: *proportion of explicit subjective sentences (`je`, 'à mon avis` etc.).*
 * **Repetition**: *proportion of repetitions (to define formally).*
 * **Bias: letter frequencies**: *frequency of each letter in the text.*
+
+## Ideas
+
+* [Hemingway App](http://www.hemingwayapp.com/)
+  * Paragraphs
+  * Passive voice
+* Vocabulary level, familiarity
+* Parenthesis, quotes, typographic hyphens
+* Relative clauses
+* Figures of speech
+  * Comparison
+  * Anaphore
+  * Alliteration
+* Clichés
+* Proportion of questions, exclamations.
+* Persons, singular, plurals
+* Cardinality of vocabulary, number of hapaxes
