@@ -33,3 +33,4 @@
 * Persons, singular, plurals
 * Cardinality of vocabulary, number of hapaxes
 * Linking words
+* Style errors ([Examples](https://www.ebsi.umontreal.ca/jetrouve/ecrit/style.htm))
