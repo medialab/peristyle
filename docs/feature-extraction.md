@@ -32,3 +32,4 @@
 * Proportion of questions, exclamations.
 * Persons, singular, plurals
 * Cardinality of vocabulary, number of hapaxes
+* Linking words
