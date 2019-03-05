@@ -11,7 +11,7 @@
 * **Small words**: *proportion of small words vs. long words.*
 * **Dictionary words**: *proportion of dictionary words vs. non-dictionary words. try proportion of capitalized dictionary words.*
 * **Named entities**: *proportion of certain entity types vs. others, e.g. Persons vs. Concepts.*
-* **Negation**: *proportion of negation (`n'`, `ne'`) in sentences.*
+* **Negation**: *proportion of negation (`n'`, `ne`, `non`) in sentences.*
 * **Subjectivity**: *proportion of explicit subjective sentences (`je`, `à mon avis` etc.).*
 * **Repetition**: *proportion of repetitions (to define formally).*
 * **Bias: letter frequencies**: *frequency of each letter in the text.*
