@@ -3,8 +3,6 @@ import csv
 from timeit import default_timer as timer
 
 
-
-
 class Timer(object):
     def __init__(self, name='Timer'):
         self.name = name
@@ -18,7 +16,7 @@ class Timer(object):
         print('%s:' % self.name, self.duration)
 
 with Timer('nlp(fr)'):
-    nlp = spacy.load('fr')
+    nlp = spacy.load('fr', disable=['tagger', 'textcat'])
 
 with Timer('print'):
     print('caca')
