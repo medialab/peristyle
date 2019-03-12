@@ -40,11 +40,29 @@ PUNCT=re.compile(r'[!?,;:_()\[\]«»—"]|[.]+')
 NOT_CHAR=re.compile(r'[.!?,;:\'\-\s\n\r_()\[\]«»’`/"0-9]+')
 CHAR=re.compile(r'[a-zéèà]')
 NEGATION=re.compile(r'\b[Nn][e\'on ]{1,2}\b')
-SUBJ=re.compile(r'\b[Jj]e\b|\b[Mm][aeons]{1,2}\b|\b[JjMm]\'')# + mien mienne
+SUBJ=re.compile(r'\b[Jj]e\b|\b[Mm][aeons]{1,2}\b|\b[JjMm]\'|\b[Mm]ien[ne]?\b')# + mien mienne
 QUOTE=re.compile(r'["«»]')
 BRACKET=re.compile(r'[(){}\[\]]')
 
 PERSON=re.compile(r'Gender=[A-z]+\||Number=[A-z]+\||Person=*\|')
+
+
+def generate_stopwords():
+    stopwords=set()
+    with open ('stopwords_français.txt', 'r') as f:
+        stopwords={word.strip() for word in f.readlines()}
+    return stopwords
+def generate_dictionary():
+    dictionary=set()
+    with open ('french.txt', 'r') as f:
+        dictionary={word.strip() for word in f.readlines()}
+    return dictionary
+
+STOPWORDS=generate_stopwords()
+DICTIONARY=generate_dictionary()
+
+
+
 
 csv.field_size_limit(100000000)
 
@@ -84,17 +102,6 @@ def generate_sources():
 
     return sources_list
 
-def generate_stopwords():
-    stopwords=set()
-    with open ('stopwords_français.txt', 'r') as f:
-        stopwords={word.strip() for word in f.readlines()}
-    return stopwords
-
-def generate_dictionary():
-    dictionary=set()
-    with open ('french.txt', 'r') as f:
-        dictionary={word.strip() for word in f.readlines()}
-    return dictionary
 
 
 #def generate_linkingwords():
@@ -187,11 +194,22 @@ def calcul_punct(punctuations, nb_puncts):
     else:
         nb_quote=nb_quote/2
         nb_bracket=nb_bracket/2
+    result={}
+    question_prop=0
+    exclamative_prop=0
+    quote_prop=0
+    bracket_prop=0
 
-    result['question_prop']=(punctuations['?']/nb_sent)*100
-    result['exclamative_prop']=(punctuations['!']/nb_sent)*100
-    result['quote_prop']=(nb_quote/nb_sent)*100
-    result['bracket_prop']=(nb_bracket/nb_sent)*100
+    if nb_sent>0:
+        question_prop=(punctuations['?']/nb_sent)*100
+        exclamative_prop=(punctuations['!']/nb_sent)*100
+        quote_prop=(nb_quote/nb_sent)*100
+        bracket_prop=(nb_bracket/nb_sent)*100
+
+    result['question_prop']=question_prop
+    result['exclamative_prop']=exclamative_prop
+    result['quote_prop']=quote_prop
+    result['bracket_prop']=bracket_prop
 
     return result
 
@@ -234,16 +252,20 @@ def pos_tagging(txt): #calcule certaines features en utilisant le pos tagging : 
     for ent in txt.ents:
         entities[ent.label_].add(ent.text)
 
+
+    verbs_results={}
+    punctuation_results={}
+    pos_results={}
+
+    if pos_counting['PUNCT']>0:
+        punctuation_results=calcul_punct(punctuations, pos_counting['PUNCT'])
+        pos_results=calcul_pos(pos_counting,len(txt))
+
     if verbs:
         nb_verbs=pos_counting['VERB']+pos_counting['AUX']
         verbs_results=calcul_verb(verbs, nb_verbs)
-    else:
-        verbs_results={}
-
-
-    punctuation_results=calcul_punct(punctuations, pos_counting['PUNCT'])
-    pos_results=calcul_pos(pos_counting,len(txt))
     #ner_results=calcul_ner(entities)
+
     results={}
 
     results.update(verbs_results)
@@ -293,7 +315,7 @@ def calcul_letters(letters, nb_char):
             }
 
 
-def calcul_ARI(txt, stopwords, dictionary): # on pourrait faire tout dans l'un à condition d'abandonner la médiane du nb de mots par phrase
+def calcul_ARI(txt): # on pourrait faire tout dans l'un à condition d'abandonner la médiane du nb de mots par phrase
 
     txt=squeeze(txt)
     sentences=nltk.tokenize.sent_tokenize(txt, language='french')
@@ -305,6 +327,7 @@ def calcul_ARI(txt, stopwords, dictionary): # on pourrait faire tout dans l'un �
     nb_sentence=0
     TYPE=''
     nb_shortwords=0
+    nb_longwords=0
     nb_stopwords=0
     letters=defaultdict(int)
     voc=defaultdict(int)
@@ -332,9 +355,11 @@ def calcul_ARI(txt, stopwords, dictionary): # on pourrait faire tout dans l'un �
 
                     if len(word)<5:
                         nb_shortwords+=1
-                    if word in stopwords:
+                    if len(word)>5:
+                        nb_longwords+=1
+                    if word in STOPWORDS:
                         nb_stopwords+=1
-                    if word in dictionary:
+                    if word in DICTIONARY:
                         nb_dictwords+=1
 
             nb_ws.append(len(sentence))
@@ -347,55 +372,57 @@ def calcul_ARI(txt, stopwords, dictionary): # on pourrait faire tout dans l'un �
     median_ws=median(nb_ws)
 
 
-    prop_shortword=(nb_shortwords/nb_word)*100
+    prop_shortwords=(nb_shortwords/nb_word)*100
+    prop_longwords=(nb_longwords/nb_word)*100
     prop_dictwords=(nb_dictwords/nb_word)*100
 
     if nb_sentence>3:
         ARI=4.71*(mean_cw)+0.5*(mean_ws)-21.43
 
+    if ARI<0 or 30<ARI:
+        ARI=0
 
-    if 0<ARI<30:
-        result={
-            'ARI':ARI ,
-            'nb_sent':nb_sentence,
-            'nb_word':nb_word,
-            'nb_char':nb_char,
-            'mean_cw':mean_cw,
-            'mean_ws':mean_ws,
-            'median_cw':median_cw,
-            'median_ws':median_ws,
-            'max_len_word':max(nb_cw),
-            'prop_shortwords':prop_shortword,
-            'prop_dictwords':prop_dictwords,
-            'voc_cardinality':(len(voc)/nb_word)*100
-            }
-        result.update(calcul_letters(letters, nb_char))
-        return result
-    else:
-        return False
+
+    result={
+        'ARI':ARI ,
+        'nb_sent':nb_sentence,
+        'nb_word':nb_word,
+        'nb_char':nb_char,
+        'mean_cw':mean_cw,
+        'mean_ws':mean_ws,
+        'median_cw':median_cw,
+        'median_ws':median_ws,
+        'max_len_word':max(nb_cw),
+        'prop_shortwords':prop_shortwords,
+        'prop_longwords':prop_longwords,
+        'prop_dictwords':prop_dictwords,
+        'voc_cardinality':(len(voc)/nb_word)*100
+        }
+    result.update(calcul_letters(letters, nb_char))
+    return result
+
+
 
 
 def calcul_features(path):
 
     try:
-        with open (path,'r') as ft:
+        with open (path[0],'r') as ft:
             txt=ft.readline()
     except:
-        return False
+        print('opening failed')
+        return{}
 
     results={}
 
-    try:
-        results.update(calcul_ARI(txt, stopwords, dictionary))
-
-    except:
-        return False
-
+    results.update(calcul_ARI(txt))
     results.update(pos_tagging(txt))
     results.update(count_negation(txt,results['nb_sent']))
     results.update(count_subjectivity(txt, results['nb_sent']))
-
-    return results
+    row=path[1]
+    for key in results.keys():
+        row[key]=results[key]
+    return row
 
 
 ##### Fonction pour calculer les nouvelles features sur tous les textes et les enregistrées
@@ -404,6 +431,12 @@ def generate_path(row):
     story_id=row['stories_id']
     return 'sample/'+story_id+'.txt'
 
+def generator():
+    fs=open('sample_normalized_sorted.csv', 'r')
+    reader=csv.DictReader(fs)
+    i=0
+    for row in reader:
+        yield (generate_path(row), row)
 
 
 def find_media_info(sources, media_id, info='level0'):
@@ -442,32 +475,21 @@ def ajout_info():
 
     fs=open('sample_normalized_sorted.csv', 'r')
     reader=csv.DictReader(fs)
-    reader.fieldnames+=['ARI', 'nb_sent', 'nb_word', 'nb_char', 'mean_cw', 'mean_ws', 'median_cw', 'median_ws', 'prop_shortwords', 'max_len_word', 'prop_dictwords', 'voc_cardinality', 'mean_occ_letter', 'median_occ_letter', 'prop_negation', 'subjectivity_prop', 'verb_prop', 'past_verb_cardinality', 'pres_verb_cardinality', 'fut_verb_cardinality', 'imp_verb_cardinality', 'other_verb_cardinality','past_verb_prop', 'pres_verb_prop', 'fut_verb_prop','imp_verb_prop', 'plur_verb_prop','sing_verb_prop','verbs_diversity','question_prop','exclamative_prop','quote_prop','bracket_prop','noun_prop','cconj_prop','adj_prop','adv_prop']
+
+    reader.fieldnames+=['ARI', 'nb_sent', 'nb_word', 'nb_char', 'mean_cw', 'mean_ws', 'median_cw', 'median_ws', 'prop_shortwords' , 'prop_longwords' ,'max_len_word', 'prop_dictwords', 'voc_cardinality', 'mean_occ_letter', 'median_occ_letter', 'prop_negation', 'subjectivity_prop', 'verb_prop', 'past_verb_cardinality', 'pres_verb_cardinality', 'fut_verb_cardinality', 'imp_verb_cardinality', 'other_verb_cardinality','past_verb_prop', 'pres_verb_prop', 'fut_verb_prop','imp_verb_prop', 'plur_verb_prop','sing_verb_prop','verbs_diversity','question_prop','exclamative_prop','quote_prop','bracket_prop','noun_prop','cconj_prop','adj_prop','adv_prop']
 
     fd=open('sample_with_features.csv', 'w')
     writer=csv.DictWriter(fd, fieldnames=reader.fieldnames)
     writer.writeheader()
     times=[]
 
-    generator=((generate_path(row), row) for row in reader)
-    print(generator)
+
     i=0
-    for row in reader:
-        i+=1
-        story_id=row['stories_id']
-
-        print('')
-        print(story_id, i)
-
+    with Timer('multiprocessing babe'):
         with Pool(4) as pool:
-            stopwords=generate_stopwords()
-            dictionary=generate_dictionary()
-            for features in pool.imap_unordered(calcul_features, generator):
-                if features==False:
-                    continue
-                for key in features.keys():
-                    row[key]=features[key]
-                writer.writerow(row)
+            for features in pool.imap_unordered(calcul_features, generator()):
+                print(features)
+                writer.writerow(features)
 
     fd.close()
     fs.close()
@@ -477,7 +499,4 @@ def ajout_info():
 
 
 #### Bonjor on travaille ####
-
-
-
 ajout_info()
