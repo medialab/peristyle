@@ -279,9 +279,10 @@ def pos_tagging(txt): #calcule certaines features en utilisant le pos tagging : 
 
 def count_subjectivity(txt, nb_sent):
     subjectivities=re.findall(SUBJ, txt)
+
     return {'subjectivity_prop':(len(subjectivities)/nb_sent)*100}
 
-def count_negation(txt, nb_sent): #mayday: la double négation
+def count_negation(txt, nb_sent):
     negations=re.findall(NEGATION, txt)
     return {'prop_negation':(len(negations)/nb_sent)*100}
 
@@ -296,18 +297,21 @@ def count_letters(letters, word):
     return letters
 
 def calcul_letters(letters, nb_char):
-
+    letters_mean=[]
     nb_missing_letters=29-len(letters)
+
     for i in range(nb_missing_letters):
         letters[i]=0
 
     mean_occ_letter=0
-    for nb_occ_letter in letters.values():
-        mean_occ_letter+=nb_occ_letter
+    median_occ_letter=0
+    if nb_char>0:
+        for nb_occ_letter in letters.values():
+            mean_occ_letter+=nb_occ_letter
+            letters_mean.append(nb_occ_letter/nb_char)
 
-
-    mean_occ_letter=mean_occ_letter/29
-    median_occ_letter=median(letters.values())
+        mean_occ_letter=mean(letters_mean)
+        median_occ_letter=median(letters_mean)
 
     return {
             'mean_occ_letter':mean_occ_letter,
@@ -332,6 +336,16 @@ def calcul_ARI(txt): # on pourrait faire tout dans l'un à condition d'abandonne
     letters=defaultdict(int)
     voc=defaultdict(int)
     nb_dictwords=0
+    max_len_word=0
+    voc_cardinality=0
+
+    mean_cw=0
+    mean_ws=0
+    median_cw=0
+    median_ws=0
+    prop_shortwords=0
+    prop_longwords=0
+    prop_dictwords=0
 
     nb_cw=[] # cw => char per word
     nb_ws=[] # ws => word per sent
@@ -340,12 +354,10 @@ def calcul_ARI(txt): # on pourrait faire tout dans l'un à condition d'abandonne
 
         if len(sentence)>3 and len(sentence)<300:
             nb_sentence+=1
-
             for word in sentence:
-
                 if is_char(word):
-
                     if len(word)<300:
+
                         word=word.lower()
                         voc[word]+=1
                         letters=count_letters(letters, word)
@@ -353,34 +365,42 @@ def calcul_ARI(txt): # on pourrait faire tout dans l'un à condition d'abandonne
                         nb_char+=len(word)
                         nb_cw.append(len(word))
 
-                    if len(word)<5:
-                        nb_shortwords+=1
-                    if len(word)>5:
-                        nb_longwords+=1
-                    if word in STOPWORDS:
-                        nb_stopwords+=1
-                    if word in DICTIONARY:
-                        nb_dictwords+=1
+                        if len(word)<5:
+                            nb_shortwords+=1
+                        if len(word)>5:
+                            nb_longwords+=1
+                        if word in STOPWORDS:
+                            nb_stopwords+=1
+                        if word in DICTIONARY:
+                            nb_dictwords+=1
 
-            nb_ws.append(len(sentence))
-
-
-    mean_cw=nb_char/nb_word
-    mean_ws=nb_word/nb_sentence
-
-    median_cw=median(nb_cw)
-    median_ws=median(nb_ws)
+                nb_ws.append(len(sentence))
 
 
-    prop_shortwords=(nb_shortwords/nb_word)*100
-    prop_longwords=(nb_longwords/nb_word)*100
-    prop_dictwords=(nb_dictwords/nb_word)*100
+        if nb_word>0:
+            mean_cw=nb_char/nb_word
+            mean_ws=nb_word/nb_sentence
 
-    if nb_sentence>3:
-        ARI=4.71*(mean_cw)+0.5*(mean_ws)-21.43
+            median_cw=median(nb_cw)
+            median_ws=median(nb_ws)
 
-    if ARI<0 or 30<ARI:
-        ARI=0
+
+            prop_shortwords=(nb_shortwords/nb_word)*100
+            prop_longwords=(nb_longwords/nb_word)*100
+            prop_dictwords=(nb_dictwords/nb_word)*100
+
+
+            voc_cardinality=(len(voc)/nb_word)*100
+            max_len_word=max(nb_cw)
+
+
+        if nb_sentence>3:
+            ARI=4.71*(mean_cw)+0.5*(mean_ws)-21.43
+
+        if ARI<0 or 30<ARI:
+            ARI=0
+
+
 
 
     result={
@@ -392,11 +412,11 @@ def calcul_ARI(txt): # on pourrait faire tout dans l'un à condition d'abandonne
         'mean_ws':mean_ws,
         'median_cw':median_cw,
         'median_ws':median_ws,
-        'max_len_word':max(nb_cw),
+        'max_len_word':max_len_word,
         'prop_shortwords':prop_shortwords,
         'prop_longwords':prop_longwords,
         'prop_dictwords':prop_dictwords,
-        'voc_cardinality':(len(voc)/nb_word)*100
+        'voc_cardinality':voc_cardinality
         }
     result.update(calcul_letters(letters, nb_char))
     return result
@@ -416,12 +436,14 @@ def calcul_features(path):
     results={}
 
     results.update(calcul_ARI(txt))
-    results.update(pos_tagging(txt))
-    results.update(count_negation(txt,results['nb_sent']))
-    results.update(count_subjectivity(txt, results['nb_sent']))
+    if results['nb_sent']>0:
+        results.update(pos_tagging(txt))
+        results.update(count_negation(txt,results['nb_sent']))
+        results.update(count_subjectivity(txt, results['nb_sent']))
     row=path[1]
     for key in results.keys():
         row[key]=results[key]
+
     return row
 
 
@@ -437,6 +459,7 @@ def generator():
     i=0
     for row in reader:
         yield (generate_path(row), row)
+
 
 
 def find_media_info(sources, media_id, info='level0'):
@@ -473,10 +496,9 @@ def produce_data():
 
 def ajout_info():
 
-    fs=open('sample_normalized_sorted.csv', 'r')
-    reader=csv.DictReader(fs)
-
-    reader.fieldnames+=['ARI', 'nb_sent', 'nb_word', 'nb_char', 'mean_cw', 'mean_ws', 'median_cw', 'median_ws', 'prop_shortwords' , 'prop_longwords' ,'max_len_word', 'prop_dictwords', 'voc_cardinality', 'mean_occ_letter', 'median_occ_letter', 'prop_negation', 'subjectivity_prop', 'verb_prop', 'past_verb_cardinality', 'pres_verb_cardinality', 'fut_verb_cardinality', 'imp_verb_cardinality', 'other_verb_cardinality','past_verb_prop', 'pres_verb_prop', 'fut_verb_prop','imp_verb_prop', 'plur_verb_prop','sing_verb_prop','verbs_diversity','question_prop','exclamative_prop','quote_prop','bracket_prop','noun_prop','cconj_prop','adj_prop','adv_prop']
+    with open('sample_normalized_sorted.csv', 'r') as fs:
+        reader=csv.DictReader(fs)
+        reader.fieldnames+=['ARI', 'nb_sent', 'nb_word', 'nb_char', 'mean_cw', 'mean_ws', 'median_cw', 'median_ws', 'prop_shortwords' , 'prop_longwords' ,'max_len_word', 'prop_dictwords', 'voc_cardinality', 'mean_occ_letter', 'median_occ_letter', 'prop_negation', 'subjectivity_prop', 'verb_prop', 'past_verb_cardinality', 'pres_verb_cardinality', 'fut_verb_cardinality', 'imp_verb_cardinality', 'other_verb_cardinality','past_verb_prop', 'pres_verb_prop', 'fut_verb_prop','imp_verb_prop', 'plur_verb_prop','sing_verb_prop','verbs_diversity','question_prop','exclamative_prop','quote_prop','bracket_prop','noun_prop','cconj_prop','adj_prop','adv_prop']
 
     fd=open('sample_with_features.csv', 'w')
     writer=csv.DictWriter(fd, fieldnames=reader.fieldnames)
