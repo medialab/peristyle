@@ -152,21 +152,40 @@ def calcul_verb(verbs, nb_verbs):
 
     result={}
 
-    result['past_verb_cardinality']=(len(tenses['past'])/verbs_diversity)*100
-    result['pres_verb_cardinality']=(len(tenses['pres'])/verbs_diversity)*100
-    result['fut_verb_cardinality']=(len(tenses['fut'])/verbs_diversity)*100
-    result['imp_verb_cardinality']=(len(tenses['imp'])/verbs_diversity)*100
-    result['other_verb_cardinality']=(len(tenses['others'])/verbs_diversity)*100
+    if nb_verbs>0 and verbs_diversity>0
 
-    result['past_verb_prop']=(nb_past_verbs/nb_verbs)*100
-    result['pres_verb_prop']=(nb_pres_verbs/nb_verbs)*100
-    result['fut_verb_prop']=(nb_fut_verbs/nb_verbs)*100
-    result['imp_verb_prop']=(nb_imp_verbs/nb_verbs)*100
+        result['past_verb_cardinality']=(len(tenses['past'])/verbs_diversity)*100
+        result['pres_verb_cardinality']=(len(tenses['pres'])/verbs_diversity)*100
+        result['fut_verb_cardinality']=(len(tenses['fut'])/verbs_diversity)*100
+        result['imp_verb_cardinality']=(len(tenses['imp'])/verbs_diversity)*100
+        result['other_verb_cardinality']=(len(tenses['others'])/verbs_diversity)*100
 
-    result['plur_verb_prop']=(persons['plur']/nb_verbs)*100
-    result['sing_verb_prop']=(persons['sing']/nb_verbs)*100
+        result['past_verb_prop']=(nb_past_verbs/nb_verbs)*100
+        result['pres_verb_prop']=(nb_pres_verbs/nb_verbs)*100
+        result['fut_verb_prop']=(nb_fut_verbs/nb_verbs)*100
+        result['imp_verb_prop']=(nb_imp_verbs/nb_verbs)*100
 
-    result['verbs_diversity']=(verbs_diversity/nb_verbs)*100
+        result['plur_verb_prop']=(persons['plur']/nb_verbs)*100
+        result['sing_verb_prop']=(persons['sing']/nb_verbs)*100
+
+        result['verbs_diversity']=(verbs_diversity/nb_verbs)*100
+
+    else:
+        result['past_verb_cardinality']=0
+        result['pres_verb_cardinality']=0
+        result['fut_verb_cardinality']=0
+        result['imp_verb_cardinality']=0
+        result['other_verb_cardinality']=0
+
+        result['past_verb_prop']=0
+        result['pres_verb_prop']=0
+        result['fut_verb_prop']=0
+        result['imp_verb_prop']=0
+
+        result['plur_verb_prop']=0
+        result['sing_verb_prop']=0
+
+        result['verbs_diversity']=0
 
     return result
 
@@ -217,12 +236,18 @@ def calcul_pos(pos_counting, nb_tokens):
 
     result={}
 
-    result['noun_prop']=(pos_counting['NOUN']/nb_tokens)*100
-    result['cconj_prop']=(pos_counting['CCONJ']/nb_tokens)*100
-    result['adj_prop']=(pos_counting['ADJ']/nb_tokens)*100
-    result['verb_prop']=((pos_counting['VERB']+pos_counting['AUX'])/nb_tokens)*100
-    result['adv_prop']=(pos_counting['ADV']/nb_tokens)*100
-
+    if nb_tokens>0:
+        result['noun_prop']=(pos_counting['NOUN']/nb_tokens)*100
+        result['cconj_prop']=(pos_counting['CCONJ']/nb_tokens)*100
+        result['adj_prop']=(pos_counting['ADJ']/nb_tokens)*100
+        result['verb_prop']=((pos_counting['VERB']+pos_counting['AUX'])/nb_tokens)*100
+        result['adv_prop']=(pos_counting['ADV']/nb_tokens)*100
+    else:
+        result['noun_prop']=0
+        result['cconj_prop']=0
+        result['adj_prop']=0
+        result['verb_prop']=0
+        result['adv_prop']=0
     return result
 
 #def calcul_ner(entities):
@@ -257,13 +282,11 @@ def pos_tagging(txt): #calcule certaines features en utilisant le pos tagging : 
     punctuation_results={}
     pos_results={}
 
-    if pos_counting['PUNCT']>0:
-        punctuation_results=calcul_punct(punctuations, pos_counting['PUNCT'])
-        pos_results=calcul_pos(pos_counting,len(txt))
 
-    if verbs:
-        nb_verbs=pos_counting['VERB']+pos_counting['AUX']
-        verbs_results=calcul_verb(verbs, nb_verbs)
+    punctuation_results=calcul_punct(punctuations, pos_counting['PUNCT'])
+    pos_results=calcul_pos(pos_counting,len(txt))
+
+    verbs_results=calcul_verb(verbs, pos_counting['VERB']+pos_counting['AUX'])
     #ner_results=calcul_ner(entities)
 
     results={}
@@ -434,7 +457,6 @@ def calcul_features(path):
         return{}
 
     results={}
-
     results.update(calcul_ARI(txt))
     if results['nb_sent']>0:
         results.update(pos_tagging(txt))
@@ -443,7 +465,6 @@ def calcul_features(path):
     row=path[1]
     for key in results.keys():
         row[key]=results[key]
-
     return row
 
 
@@ -510,8 +531,8 @@ def ajout_info():
     with Timer('multiprocessing babe'):
         with Pool(4) as pool:
             for features in pool.imap_unordered(calcul_features, generator()):
-                print(features)
-                writer.writerow(features)
+                if row!={}:
+                    writer.writerow(features)
 
     fd.close()
     fs.close()
