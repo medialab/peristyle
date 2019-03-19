@@ -1,3 +1,4 @@
+import statistics
 import matplotlib.pyplot as plt
 import numpy as np
 import csv
@@ -5,6 +6,7 @@ import random
 import json
 from statistics import mean
 from statistics import median
+from statistics import pstdev
 
 from collections import defaultdict
 from sklearn.decomposition import PCA, IncrementalPCA
@@ -58,8 +60,6 @@ SOURCES=generate_sources()
 
 
 
-
-
 def count_stories():
     f_sample =  open('sample_with_features.csv', 'r')
     samples=csv.DictReader(f_sample)
@@ -72,66 +72,28 @@ def count_stories():
             count_stories[media['level2']][media['level1']][media['level0']][media['name']]+=1
 
     for level2 in count_stories.keys():
-        print(level2)
+        #print(level2)
         for level1 in count_stories[level2].keys():
-            print(' -',level1)
+            #print(' -',level1)
             for level0 in count_stories[level2][level1].keys():
-                print('  -', level0, 'medias diff: ',len(count_stories[level2][level1][level0]))
+                #print('  -', level0, 'medias diff: ',len(count_stories[level2][level1][level0]))
+                print(level0)
                 nb_stories=0
-                for value in count_stories[level2][level1][level0].values():
-                    nb_stories+=value
-                print('   ', nb_stories, ' stories')
-
+                for key in count_stories[level2][level1][level0].keys():
+                    nb_stories+=count_stories[level2][level1][level0][key]
     with open('count_stories.json','w') as fd:
         json.dump(count_stories, fd, indent=2, ensure_ascii=False)
     f_sample.close()
 
     return 0
 
-def produce_data_with_all_features():
-    i=0
-
-    f_sample=open('sample_with_features.csv', 'r')
-    samples=csv.DictReader(f_sample)
-    count_stories=defaultdict(int)
-
-    for row in samples:
-        if row['media_id']:
-            count_stories[row['media_id']]+=1
-
-    f_sample.close()
-
-    f_sample=open('sample_with_features.csv', 'r')
-    samples=csv.DictReader(f_sample)
-    data={"values":[]}
-
-    for row in samples:
-        print(row)
-        if row['media_id']:
-            print(row['media_id'])
-            info=find_source(float(row['media_id']))
-            value={}
-            if info:
-
-                for key in row.keys():
-                    value[key]=row[key]
-                for key in info.keys():
-                    value[key]=info[key]
-                value['nb_stories']=count_stories[row['media_id']]
-                data['values'].append(value)
-    f_sample.close()
-
-    with open('features_data.json','w') as fd:
-        json.dump(data, fd, indent=2, ensure_ascii=False)
-
-    return data
-
+count_stories()
 
 def create_matrix():
     f=open('sample_with_features.csv', 'r')
     samples=csv.DictReader(f)
-    features_name=['stories_id', 'media_id','ARI','mean_cw','mean_ws','median_cw','median_ws','prop_shortwords','prop_longwords','prop_dictwords','voc_cardinality','mean_occ_letter','median_occ_letter','prop_negation','subjectivity_prop','verb_prop','past_verb_cardinality','pres_verb_cardinality','fut_verb_cardinality','imp_verb_cardinality','other_verb_cardinality','past_verb_prop','pres_verb_prop','fut_verb_prop','imp_verb_prop','plur_verb_prop','sing_verb_prop','verbs_diversity','question_prop','exclamative_prop','quote_prop','bracket_prop','noun_prop','cconj_prop','adj_prop','adv_prop']
-
+    features_name=['stories_id', 'media_id','ARI','mean_cw','mean_ws','median_cw','median_ws','prop_shortwords','prop_longwords','prop_dictwords','voc_cardinality','mean_occ_letter','median_occ_letter','verb_prop','noun_prop','cconj_prop','adj_prop','adv_prop']
+    #verbs_diversity is out
     matrix=[]
     for row in samples:
         sample=()
@@ -152,7 +114,7 @@ def create_matrix():
     return matrix
 
 def pca_function(matrix):
-    features_names=['ARI','mean_cw','mean_ws','median_cw','median_ws','prop_shortwords','prop_longwords','prop_dictwords','voc_cardinality','mean_occ_letter','median_occ_letter','prop_negation','subjectivity_prop','verb_prop','past_verb_cardinality','pres_verb_cardinality','fut_verb_cardinality','imp_verb_cardinality','other_verb_cardinality','past_verb_prop','pres_verb_prop','fut_verb_prop','imp_verb_prop','plur_verb_prop','sing_verb_prop','verbs_diversity','question_prop','exclamative_prop','quote_prop','bracket_prop','noun_prop','cconj_prop','adj_prop','adv_prop']
+    features_names=['ARI','mean_cw','mean_ws','median_cw','median_ws','prop_shortwords','prop_longwords','prop_dictwords','voc_cardinality','mean_occ_letter','median_occ_letter','verb_prop','noun_prop','cconj_prop','adj_prop','adv_prop']
 
     stories_id=matrix[:,0]
     medias_id=matrix[:,1]
@@ -166,16 +128,16 @@ def pca_function(matrix):
     for item in pca.components_:
         index=np.where(item==max(item))
         print(type(index))
-        print(max(item), index)
+        print('max ', max(item), index)
+        print('4 ',features_names[4])
+
+
         print(mean(item))
         print(median(item))
         index=np.where(item==min(item))
-        print(min(item), index)
+        print('min ', min(item), index)
         print('')
 
-    print('28 ', features_names[28])
-    print('25 ', features_names[25])
-    print('15 ', features_names[15])
 
     print('x_pca explained_variance : ', pca.explained_variance_)
     print('x_pca explained variance ratio : ', pca.explained_variance_ratio_)
@@ -187,6 +149,7 @@ def pca_function(matrix):
 
     print(x_pca)
     extra=[]
+    '''
     for i in range(5):
         maximums=np.argmax(x_pca, axis=0)
         x_pca=np.delete(x_pca, maximums[0], 0)
@@ -198,14 +161,18 @@ def pca_function(matrix):
         extra.append(story_id)
 
     print(extra)
-
+    '''
     return x_pca
 
 
 def produce_data(x_pca,media_wanted=0):
     data={"values":[]}
 
-    for i in range(x_pca.shape[0]):
+    n=10000
+    index = np.random.choice(x_pca.shape[0], n, replace=False)
+    print(len(index))
+
+    for i in index:
         if int(x_pca[i,2])==media_wanted or media_wanted==0:
             value={}
             media=find_source(x_pca[i,2])
@@ -223,9 +190,65 @@ def produce_data(x_pca,media_wanted=0):
     return data
 #[897616998.0, 884051898.0, 1094353453.0, 899430978.0, 980894987.0, 937875675.0] les bizzarres
 
-matrix=create_matrix()
-x_pca=pca_function(matrix)
-produce_data(x_pca)
+#matrix=create_matrix()
+#x_pca=pca_function(matrix)
+#produce_data(x_pca)
+#print('coucouc')
 
-print('coucouc')
 
+def study_features():
+    features_names=['ARI','mean_cw','mean_ws','median_cw','median_ws','prop_shortwords','prop_longwords','prop_dictwords','voc_cardinality','mean_occ_letter','median_occ_letter','prop_negation','subjectivity_prop','verb_prop','past_verb_cardinality','pres_verb_cardinality','fut_verb_cardinality','imp_verb_cardinality','other_verb_cardinality','past_verb_prop','pres_verb_prop','fut_verb_prop','imp_verb_prop','plur_verb_prop','sing_verb_prop','question_prop','exclamative_prop','quote_prop','bracket_prop','noun_prop','cconj_prop','adj_prop','adv_prop', 'verbs_diversity']
+
+    i=0
+    f_sample=open('sample_with_features.csv', 'r')
+    samples=csv.DictReader(f_sample)
+    features=defaultdict(list)
+
+    for row in samples:
+        if row['media_id'] and row['media_id']!=' ':
+            for key in row.keys():
+                try:
+                    row[key]=float(row[key])
+                except:
+                    row[key]=0
+                features[key].append(row[key])
+    pstdev_features={}
+    f_sample.close()
+    for key in features_names:
+        result=pstdev(features[key])/(max(features[key])-min(features[key]))
+        pstdev_features[key]=result
+
+    print(mean(pstdev_features.values()))
+    s = [(k, pstdev_features[k]) for k in sorted(pstdev_features, key=pstdev_features.get, reverse=True)]
+    for k, v in s:
+        print(k, v)
+    return 0
+
+
+#study_features()
+
+def print_La_Voix_du_Nord():
+    f_sample=open('sample_with_features.csv', 'r')
+    samples=csv.DictReader(f_sample)
+    i=0
+    for row in samples:
+        if row['stories_id']:
+            if int(row['media_id'])==327:
+                i+=1
+                try:
+                    with open("sample/"+row['stories_id']+'.txt', 'r') as f:
+                        text=f.readline()
+                    print(i)
+                    print('text ',text)
+                    print('title ',row['title'])
+                    print('url ', row['url'])
+                    print('')
+                    print('')
+                except:
+                    print('il y a eu une couille dans le potage')
+                    print('')
+                    print('')
+            if i==100:
+                break
+
+print_La_Voix_du_Nord()
