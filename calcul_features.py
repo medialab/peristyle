@@ -12,6 +12,7 @@ from statistics import mean
 from collections import defaultdict
 from timeit import default_timer as timer
 from multiprocessing import Pool
+from langdetect import detect
 
 
 class Timer(object):
@@ -149,10 +150,9 @@ def calcul_verb(verbs, nb_verbs):
     for tens in tenses:
         verbs_diversity+=len(tens)
 
-
     result={}
 
-    if nb_verbs>0 and verbs_diversity>0
+    if nb_verbs>0 and verbs_diversity>0:
 
         result['past_verb_cardinality']=(len(tenses['past'])/verbs_diversity)*100
         result['pres_verb_cardinality']=(len(tenses['pres'])/verbs_diversity)*100
@@ -312,34 +312,18 @@ def count_negation(txt, nb_sent):
 ##Pour utiliser NLTK
 
 def count_letters(letters, word):
-
+    elaouin=['e','l','o','a','i','n']
     for char in word:
-        if CHAR.match(char):
+        char=char.lower()
+        if char in elaouin:
             letters[char]+=1
 
     return letters
 
 def calcul_letters(letters, nb_char):
-    letters_mean=[]
-    nb_missing_letters=29-len(letters)
-
-    for i in range(nb_missing_letters):
-        letters[i]=0
-
-    mean_occ_letter=0
-    median_occ_letter=0
-    if nb_char>0:
-        for nb_occ_letter in letters.values():
-            mean_occ_letter+=nb_occ_letter
-            letters_mean.append(nb_occ_letter/nb_char)
-
-        mean_occ_letter=mean(letters_mean)
-        median_occ_letter=median(letters_mean)
-
-    return {
-            'mean_occ_letter':mean_occ_letter,
-            'median_occ_letter':median_occ_letter
-            }
+    for letter in letters.keys():
+        letters[letter]=letters[letter]/nb_char
+    return letters
 
 
 def calcul_ARI(txt): # on pourrait faire tout dans l'un à condition d'abandonner la médiane du nb de mots par phrase
@@ -356,7 +340,7 @@ def calcul_ARI(txt): # on pourrait faire tout dans l'un à condition d'abandonne
     nb_shortwords=0
     nb_longwords=0
     nb_stopwords=0
-    letters=defaultdict(int)
+    letters={'e':0,'l':0,'o':0,'a':0,'i':0,'n':0}
     voc=defaultdict(int)
     nb_dictwords=0
     max_len_word=0
@@ -400,7 +384,8 @@ def calcul_ARI(txt): # on pourrait faire tout dans l'un à condition d'abandonne
                 nb_ws.append(len(sentence))
 
 
-        if nb_word>0:
+        if nb_word>0 and nb_sentence>3:
+
             mean_cw=nb_char/nb_word
             mean_ws=nb_word/nb_sentence
 
@@ -416,12 +401,9 @@ def calcul_ARI(txt): # on pourrait faire tout dans l'un à condition d'abandonne
             voc_cardinality=(len(voc)/nb_word)*100
             max_len_word=max(nb_cw)
 
-
-        if nb_sentence>3:
             ARI=4.71*(mean_cw)+0.5*(mean_ws)-21.43
-
-        if ARI<0 or 30<ARI:
-            ARI=0
+            if ARI<0 or 30<ARI:
+                ARI=0
 
 
 
@@ -441,10 +423,9 @@ def calcul_ARI(txt): # on pourrait faire tout dans l'un à condition d'abandonne
         'prop_dictwords':prop_dictwords,
         'voc_cardinality':voc_cardinality
         }
-    result.update(calcul_letters(letters, nb_char))
+    if nb_char>0:
+        result.update(calcul_letters(letters, nb_char))
     return result
-
-
 
 
 def calcul_features(path):
@@ -455,17 +436,21 @@ def calcul_features(path):
     except:
         print('opening failed')
         return{}
-
+    txt=clean(txt)
+    row={}
     results={}
     results.update(calcul_ARI(txt))
-    if results['nb_sent']>0:
+    if results['ARI']>0:
         results.update(pos_tagging(txt))
         results.update(count_negation(txt,results['nb_sent']))
         results.update(count_subjectivity(txt, results['nb_sent']))
-    row=path[1]
-    for key in results.keys():
-        row[key]=results[key]
+        results['language']=detect(txt)
+        row=path[1]
+        for key in results.keys():
+            row[key]=results[key]
     return row
+
+
 
 
 ##### Fonction pour calculer les nouvelles features sur tous les textes et les enregistrées
@@ -519,7 +504,7 @@ def ajout_info():
 
     with open('sample_normalized_sorted.csv', 'r') as fs:
         reader=csv.DictReader(fs)
-        reader.fieldnames+=['ARI', 'nb_sent', 'nb_word', 'nb_char', 'mean_cw', 'mean_ws', 'median_cw', 'median_ws', 'prop_shortwords' , 'prop_longwords' ,'max_len_word', 'prop_dictwords', 'voc_cardinality', 'mean_occ_letter', 'median_occ_letter', 'prop_negation', 'subjectivity_prop', 'verb_prop', 'past_verb_cardinality', 'pres_verb_cardinality', 'fut_verb_cardinality', 'imp_verb_cardinality', 'other_verb_cardinality','past_verb_prop', 'pres_verb_prop', 'fut_verb_prop','imp_verb_prop', 'plur_verb_prop','sing_verb_prop','verbs_diversity','question_prop','exclamative_prop','quote_prop','bracket_prop','noun_prop','cconj_prop','adj_prop','adv_prop']
+        reader.fieldnames+=['ARI', 'nb_sent', 'nb_word', 'nb_char', 'mean_cw', 'mean_ws', 'median_cw', 'median_ws', 'prop_shortwords' , 'prop_longwords' ,'max_len_word', 'prop_dictwords', 'voc_cardinality', 'prop_negation', 'subjectivity_prop', 'verb_prop', 'past_verb_cardinality', 'pres_verb_cardinality', 'fut_verb_cardinality', 'imp_verb_cardinality', 'other_verb_cardinality','past_verb_prop', 'pres_verb_prop', 'fut_verb_prop','imp_verb_prop', 'plur_verb_prop','sing_verb_prop','verbs_diversity','question_prop','exclamative_prop','quote_prop','bracket_prop','noun_prop','cconj_prop','adj_prop','adv_prop', 'a', 'e', 'i', 'l', 'n', 'o']
 
     fd=open('sample_with_features.csv', 'w')
     writer=csv.DictWriter(fd, fieldnames=reader.fieldnames)
@@ -531,7 +516,7 @@ def ajout_info():
     with Timer('multiprocessing babe'):
         with Pool(4) as pool:
             for features in pool.imap_unordered(calcul_features, generator()):
-                if row!={}:
+                if features!={}:
                     writer.writerow(features)
 
     fd.close()
