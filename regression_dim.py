@@ -6,6 +6,8 @@ import random
 import json
 import re
 
+from langdetect import detect
+
 from statistics import mean
 from statistics import median
 from statistics import pstdev
@@ -112,7 +114,12 @@ def create_matrix():
     #verbs_diversity is out
     matrix=[]
     for row in samples:
-        if int(row['media_id'])!=319:
+        if int (row['media_id'])==329:
+            with open("sample/"+row['stories_id']+'.txt', 'r') as f:
+                text=f.readline()
+            if len(text)<500:
+                continue
+        if int(row['media_id'])!=319 and row['language']=="fr":
             sample=()
             for feature in features_name:
                 try:
@@ -180,23 +187,37 @@ def pca_function(matrix):
     return x_pca
 
 
+def produce_url():
+    url={}
+    f_sample=open('sample_normalized_sorted.csv', 'r')
+    samples=csv.DictReader(f_sample)
+    for row in samples:
+        url[int(row['stories_id'])]=row['url']
+    f_sample.close()
+    return url
+
+
 def produce_data(x_pca,media_wanted=0):
     data={"values":[]}
 
     n=10000
     index = np.random.choice(x_pca.shape[0], n, replace=False)
     print(len(index))
-
+    list_url=produce_url()
+    print(list_url)
+    print('ICIIIIIIIII')
     for i in index:
         if int(x_pca[i,2])==media_wanted or media_wanted==0:
             value={}
             media=find_source(x_pca[i,2])
+            for key in media.keys():
+                value[key]=media[key]
+            value['url']=list_url[int(x_pca[i,3])]
             value['story_id']=x_pca[i, 3]
             value['media_id']=x_pca[i, 2]
             value['x']=x_pca[i, 0]
             value['y']=x_pca[i, 1]
-            for key in media.keys():
-                value[key]=media[key]
+
             data['values'].append(value)
 
     with open('reg_dim_data.json','w') as fd:
@@ -209,6 +230,7 @@ def produce_data(x_pca,media_wanted=0):
 #print(matrix.shape)
 #x_pca=pca_function(matrix)
 #produce_data(x_pca)
+
 
 
 
@@ -244,7 +266,7 @@ def study_features():
 #study_features()
 
 def print_media(media_wanted_id=0):
-    f_sample=open('sample_normalized_sorted.csv', 'r')
+    f_sample=open('sample_with_features.csv', 'r')
     samples=csv.DictReader(f_sample)
     i=0
     strange=[]
@@ -259,6 +281,7 @@ def print_media(media_wanted_id=0):
                     print(i)
                     #text=clean(text)
                     #text=squeeze(text)
+                    print(row['language'])
                     print('text ',text)
                     print('len ', len(text))
                     print('title ',row['title'])
@@ -299,24 +322,81 @@ def print_media2(media_wanted_id):
     f_sample=open('reg_dim_data.json', 'r')
     data=json.load(f_sample)
     i=0
+    j=0
     for item in data['values']:
         if int(item['media_id'])==media_wanted_id:
-            i+=1
-            print(item['story_id'])
-        
+            j+=1
+
             with open("sample/"+str(int(item['story_id']))+'.txt', 'r') as f:
                 text=f.readline()
-            print(i)
             text=clean(text)
             text=squeeze(text)
-            print('text ',text)
-            print('len ', len(text))
-            print('story_id ', item['story_id'])
-            print('')
-            print('')
-    
+            len_text=len(text)
+            if len_text>500:
+                i+=1
+                print(item['story_id'])
+                print('text ',text)
+                print('len ', len_text)
+                print('story_id ', item['story_id'])
+                print('url ', item['url'])
+                print('')
+                print('')
+    print(i)
+    print(j)
+
     return 0
 
+def study_variation_letter():
+    f_sample=open('sample_with_features.csv', 'r')
+    samples=csv.DictReader(f_sample)
+    elaoin=['e','l','a','o','i','n']
+    elaoin_var=defaultdict(list)
+
+    for row in samples:
+        for letter in elaoin:
+            elaoin_var[letter].append(float(row[letter]))
+
+    for letter in elaoin:
+        elaoin_var[letter]=pstdev(elaoin_var[letter])
+
+    print(elaoin_var)
+    return 0
+
+#study_variation_letter()
+
+
+
+print_media(49)
+
+
+
+'''
+f_sample=open('sample_with_features.csv', 'r')
+samples=csv.DictReader(f_sample)
+i=0
+languages=[]
+for row in samples:
+
+    try:
+        with open("sample/"+row['stories_id']+".txt", "r") as f:
+            txt=f.readline()
+            txt=clean(txt)
+
+            langue=detect(txt)
+    except:
+        print('opening failed')
+        continue
+    if langue!='fr':
+        languages.append(langue)
+        i+=1
+        print(row['stories_id'], row['media_name'], langue)
+        print(row['url'])
+        print(txt)
+        print("")
+
+print(i)
+
+1078348164
 
 f_sample=open('sample_with_features.csv', 'r')
 samples=csv.DictReader(f_sample)
@@ -331,3 +411,4 @@ for row in samples:
 
 with open('features_data.json','w') as fd:
     json.dump(data, fd, indent=2, ensure_ascii=False)
+'''

@@ -363,7 +363,7 @@ def calcul_ARI(txt): # on pourrait faire tout dans l'un à condition d'abandonne
             nb_sentence+=1
             for word in sentence:
                 if is_char(word):
-                    if len(word)<300:
+                    if len(word)<50:
 
                         word=word.lower()
                         voc[word]+=1
@@ -383,27 +383,19 @@ def calcul_ARI(txt): # on pourrait faire tout dans l'un à condition d'abandonne
 
                 nb_ws.append(len(sentence))
 
-
-        if nb_word>0 and nb_sentence>3:
-
-            mean_cw=nb_char/nb_word
-            mean_ws=nb_word/nb_sentence
-
-            median_cw=median(nb_cw)
-            median_ws=median(nb_ws)
-
-
-            prop_shortwords=(nb_shortwords/nb_word)*100
-            prop_longwords=(nb_longwords/nb_word)*100
-            prop_dictwords=(nb_dictwords/nb_word)*100
-
-
-            voc_cardinality=(len(voc)/nb_word)*100
-            max_len_word=max(nb_cw)
-
-            ARI=4.71*(mean_cw)+0.5*(mean_ws)-21.43
-            if ARI<0 or 30<ARI:
-                ARI=0
+    if nb_word>0 and nb_sentence>3:
+        mean_cw=nb_char/nb_word
+        mean_ws=nb_word/nb_sentence
+        median_cw=median(nb_cw)
+        median_ws=median(nb_ws)
+        prop_shortwords=(nb_shortwords/nb_word)*100
+        prop_longwords=(nb_longwords/nb_word)*100
+        prop_dictwords=(nb_dictwords/nb_word)*100
+        voc_cardinality=(len(voc)/nb_word)*100
+        max_len_word=max(nb_cw)
+        ARI=4.71*(mean_cw)+0.5*(mean_ws)-21.43
+        if ARI<0 or 30<ARI:
+            ARI=0
 
 
 
@@ -504,7 +496,7 @@ def ajout_info():
 
     with open('sample_normalized_sorted.csv', 'r') as fs:
         reader=csv.DictReader(fs)
-        reader.fieldnames+=['ARI', 'nb_sent', 'nb_word', 'nb_char', 'mean_cw', 'mean_ws', 'median_cw', 'median_ws', 'prop_shortwords' , 'prop_longwords' ,'max_len_word', 'prop_dictwords', 'voc_cardinality', 'prop_negation', 'subjectivity_prop', 'verb_prop', 'past_verb_cardinality', 'pres_verb_cardinality', 'fut_verb_cardinality', 'imp_verb_cardinality', 'other_verb_cardinality','past_verb_prop', 'pres_verb_prop', 'fut_verb_prop','imp_verb_prop', 'plur_verb_prop','sing_verb_prop','verbs_diversity','question_prop','exclamative_prop','quote_prop','bracket_prop','noun_prop','cconj_prop','adj_prop','adv_prop', 'a', 'e', 'i', 'l', 'n', 'o']
+        reader.fieldnames+=['ARI', 'nb_sent', 'nb_word', 'nb_char', 'mean_cw', 'mean_ws', 'median_cw', 'median_ws', 'prop_shortwords' , 'prop_longwords' ,'max_len_word', 'prop_dictwords', 'voc_cardinality', 'prop_negation', 'subjectivity_prop', 'verb_prop', 'past_verb_cardinality', 'pres_verb_cardinality', 'fut_verb_cardinality', 'imp_verb_cardinality', 'other_verb_cardinality','past_verb_prop', 'pres_verb_prop', 'fut_verb_prop','imp_verb_prop', 'plur_verb_prop','sing_verb_prop','verbs_diversity','question_prop','exclamative_prop','quote_prop','bracket_prop','noun_prop','cconj_prop','adj_prop','adv_prop', 'a', 'e', 'i', 'l', 'n', 'o', 'language']
 
     fd=open('sample_with_features.csv', 'w')
     writer=csv.DictWriter(fd, fieldnames=reader.fieldnames)
@@ -527,4 +519,10 @@ def ajout_info():
 
 
 #### Bonjor on travaille ####
-ajout_info()
+#ajout_info()
+
+with open('mongolie.txt', 'r') as f:
+    txt=f.readline()
+print(txt)
+txt=clean(txt)
+print(calcul_ARI(txt))
