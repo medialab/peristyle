@@ -9,6 +9,7 @@ from nltk.tokenize import sent_tokenize
 from ural import LRUTrie
 from statistics import median
 from statistics import mean
+from statistics import stdev
 from collections import defaultdict
 from timeit import default_timer as timer
 from multiprocessing import Pool
@@ -45,7 +46,7 @@ SUBJ=re.compile(r'\b[Jj]e\b|\b[Mm][aeons]{1,2}\b|\b[JjMm]\'|\b[Mm]ien[ne]?\b')# 
 QUOTE=re.compile(r'["«»]')
 BRACKET=re.compile(r'[(){}\[\]]')
 
-PERSON=re.compile(r'Gender=[A-z]+\||Number=[A-z]+\||Person=*\|')
+PERSON=re.compile(r'Gender=[A-z]+\||Number=[A-z]+\||Person=.\|')
 
 
 def generate_stopwords():
@@ -68,7 +69,7 @@ DICTIONARY=generate_dictionary()
 csv.field_size_limit(100000000)
 
 def is_char(word):
-    return not bool(NOT_CHAR.match(word))
+    return not bool(NOT_CHAR.search(word))
 
 def squeeze(txt): #pour être sur que le sent tokenizer de nltk marche bien
     txt=re.sub(r'[.]+', '.', txt)
@@ -106,8 +107,6 @@ def generate_sources():
 
 
 #def generate_linkingwords():
-
-
 
 def calcul_verb(verbs, nb_verbs):
     result={}
@@ -148,8 +147,11 @@ def calcul_verb(verbs, nb_verbs):
 
     verbs_diversity=0
     for tens in tenses:
-        verbs_diversity+=len(tens)
-
+        verbs_diversity+=len(tenses[tens])
+    print('verbs ',verbs)
+    print('tenses ',tenses)
+    print('nb_verbs', nb_verbs)
+    print('verbs diversity', verbs_diversity)
     result={}
 
     if nb_verbs>0 and verbs_diversity>0:
@@ -272,6 +274,8 @@ def pos_tagging(txt): #calcule certaines features en utilisant le pos tagging : 
         if 'PUNCT' in token.pos_:
             punctuations[token.text]+=1
         elif 'VERB' in token.pos_ or 'AUX' in token.pos_:
+           print(token.pos_)
+           print(token.text)
            verbs.append(token.tag_)
 
     for ent in txt.ents:
@@ -300,10 +304,9 @@ def pos_tagging(txt): #calcule certaines features en utilisant le pos tagging : 
 
 ## Pour les trucs avec re.match
 
-def count_subjectivity(txt, nb_sent):
+def count_subjectivity(txt, nb_word):
     subjectivities=re.findall(SUBJ, txt)
-
-    return {'subjectivity_prop':(len(subjectivities)/nb_sent)*100}
+    return {'subjectivity_prop':(len(subjectivities)/nb_word)*100}
 
 def count_negation(txt, nb_sent):
     negations=re.findall(NEGATION, txt)
@@ -324,6 +327,11 @@ def calcul_letters(letters, nb_char):
     for letter in letters.keys():
         letters[letter]=letters[letter]/nb_char
     return letters
+
+def calcul_voc_cardinality(voc, nb_word):
+    list_voc_freq=[voc[key] for key in voc.keys() if key not in STOPWORDS]
+    voc_cardinality=(len(list_voc)/nb_word)*100
+    return voc_cardinality
 
 
 def calcul_ARI(txt): # on pourrait faire tout dans l'un à condition d'abandonner la médiane du nb de mots par phrase
@@ -364,7 +372,7 @@ def calcul_ARI(txt): # on pourrait faire tout dans l'un à condition d'abandonne
             for word in sentence:
                 if is_char(word):
                     if len(word)<50:
-
+                        print(word)
                         word=word.lower()
                         voc[word]+=1
                         letters=count_letters(letters, word)
@@ -380,8 +388,12 @@ def calcul_ARI(txt): # on pourrait faire tout dans l'un à condition d'abandonne
                             nb_stopwords+=1
                         if word in DICTIONARY:
                             nb_dictwords+=1
-
                 nb_ws.append(len(sentence))
+
+
+    print(nb_word)
+    print(voc)
+    print(len(voc))
 
     if nb_word>0 and nb_sentence>3:
         mean_cw=nb_char/nb_word
@@ -391,7 +403,7 @@ def calcul_ARI(txt): # on pourrait faire tout dans l'un à condition d'abandonne
         prop_shortwords=(nb_shortwords/nb_word)*100
         prop_longwords=(nb_longwords/nb_word)*100
         prop_dictwords=(nb_dictwords/nb_word)*100
-        voc_cardinality=(len(voc)/nb_word)*100
+        voc_cardinality=calcul_voc_cardinality(voc,nb_word)
         max_len_word=max(nb_cw)
         ARI=4.71*(mean_cw)+0.5*(mean_ws)-21.43
         if ARI<0 or 30<ARI:
@@ -413,8 +425,10 @@ def calcul_ARI(txt): # on pourrait faire tout dans l'un à condition d'abandonne
         'prop_shortwords':prop_shortwords,
         'prop_longwords':prop_longwords,
         'prop_dictwords':prop_dictwords,
-        'voc_cardinality':voc_cardinality
+        'voc_cardinality':voc_cardinality,
+        'voc':len(voc)
         }
+
     if nb_char>0:
         result.update(calcul_letters(letters, nb_char))
     return result
@@ -435,7 +449,7 @@ def calcul_features(path):
     if results['ARI']>0:
         results.update(pos_tagging(txt))
         results.update(count_negation(txt,results['nb_sent']))
-        results.update(count_subjectivity(txt, results['nb_sent']))
+        results.update(count_subjectivity(txt, results['nb_word']))
         results['language']=detect(txt)
         row=path[1]
         for key in results.keys():
@@ -520,9 +534,101 @@ def ajout_info():
 
 #### Bonjor on travaille ####
 #ajout_info()
+'''
+CROCHETS=re.compile(r'\[.*\]')
 
-with open('mongolie.txt', 'r') as f:
+f_wiki=open('texts.csv', 'r')
+wiki=csv.DictReader(f_wiki)
+
+infos=[]
+i=0
+for index, row in enumerate(wiki):
+    i+=1
+    txt=row['txt']
+    txt=re.sub(CROCHETS, ' ', txt)
+    txt=clean(txt)
+    txt=squeeze(txt)
+    info={"id":index}
+    info.update(calcul_ARI(txt))
+    if info['ARI']>0:
+        infos.append(info)
+    print(info)
+    print(i)
+
+
+with open('wiki_data.json','w') as f:
+    json.dump(infos, f, indent=2, ensure_ascii=False )
+
+f_wiki.close()
+
+
+CROCHETS=re.compile(r'\[.*\]')
+
+
+with open('wiki_data.json','r') as f_wiki:
+    results_wiki=json.load(f_wiki)
+
+
+info=defaultdict(list)
+mean_letters={}
+mean_voc_cardinality=0
+
+elaouin=['e','l','a','o','i','n','voc_cardinality', 'voc']
+
+for letter in elaouin:
+    list_letter=[row[letter] for row in results_wiki]
+    print('info ', letter, mean(list_letter))
+    print('max', max(list_letter))
+    print('min', min(list_letter))
+    print('stdev', stdev(list_letter))
+    print('median', median(list_letter))
+    print('')
+
+list_voc=[row['voc_cardinality'] for row in results_wiki]
+max_voc_cardinality=max(list_voc)
+max_voc_id=[row['id'] for row in results_wiki if row['voc_cardinality']==max_voc_cardinality]
+print(max_voc_id)
+
+min_voc_cardinality=min(list_voc)
+min_voc_id=[row['id'] for row in results_wiki if row['voc_cardinality']==min_voc_cardinality]
+print(min_voc_id)
+
+
+
+
+
+
+f_wiki=open('texts.csv', 'r')
+wiki=csv.DictReader(f_wiki)
+for index, row in enumerate(wiki):
+    txt=row['txt']
+    txt=re.sub(CROCHETS, ' ', txt)
+    txt=clean(txt)
+    txt=squeeze(txt)
+    if index in max_voc_id:
+        print('MAX',index, txt)
+        print('')
+        calcul_ARI(txt)
+        print(txt)
+
+
+
+    #elif index in min_voc_id:
+    #    print('MIN',index, txt)
+    #    print('')
+
+
+f_wiki.close()
+
+'''
+
+
+
+
+with open('sample/908831971.txt', 'r') as f:
     txt=f.readline()
-print(txt)
+
 txt=clean(txt)
-print(calcul_ARI(txt))
+print(txt)
+print(pos_tagging(txt))
+print('END')
