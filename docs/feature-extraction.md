@@ -37,3 +37,8 @@
 * [Tropes](https://www.tropes.fr/) software
 * 'tu'
 * Dependency parsing tree complexity
+
+## Dictionaries
+
+* https://www.linternaute.fr/dictionnaire/fr/liste-usage/
+* http://golfes-dombre.nuxit.net/mots-rares/a.html
