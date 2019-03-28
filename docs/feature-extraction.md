@@ -42,3 +42,5 @@
 
 * https://www.linternaute.fr/dictionnaire/fr/liste-usage/
 * http://golfes-dombre.nuxit.net/mots-rares/a.html
+* http://www.cnrtl.fr/dictionnaires/modernes/
+* http://stella.atilf.fr/
