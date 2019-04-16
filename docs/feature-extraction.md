@@ -47,3 +47,4 @@
 * https://fr.wiktionary.org/wiki/Annexe:Glossaire_grammatical
 * https://dumps.wikimedia.org/frwiktionary/latest/frwiktionary-latest-pages-articles.xml.bz2
 * https://fr.wiktionary.org/wiki/Cat%C3%A9gorie:Registres_de_langue_en_fran%C3%A7ais
+* http://www.lexique.org/
