@@ -40,6 +40,7 @@ USELESS=re.compile(r'[\'’`\- ]+')
 
 POINT=re.compile(r'[!?.]+')
 PUNCT=re.compile(r'[!?,;:_()\[\]«»—"]|[.]+')
+COMMA=re.compile(r',')
 NOT_CHAR=re.compile(r'[.!?,;:\'\-\s\n\r_()\[\]«»’`/"0-9]+')
 CHAR=re.compile(r'[a-zéèà]')
 NEGATION=re.compile(r'\b[Nn][e\'on ]{1,2}\b')
@@ -51,21 +52,31 @@ PERSON=re.compile(r'Gender=[A-z]+\||Number=[A-z]+\||Person=.\|')
 
 
 def generate_stopwords():
-    with open ('stopwords_français.txt', 'r') as f:
+    with open('stopwords_français.txt', 'r') as f:
         stopwords={word.strip() for word in f.readlines()}
     return stopwords
 
 def generate_dictionary():
-    with open ('french.txt', 'r') as f:
+    with open('french.txt', 'r') as f:
         dictionary={word.strip() for word in f.readlines()}
     return dictionary
+
+def generate_language_level():
+    wiktionaire=defaultdict(set)
+    with open("../nlp/wikitionary.csv", "r") as f:
+        reader=csv.DictReader(f)
+        for row in reader:
+            language_level=row["language_level"]
+            word=row["word"]
+            if language_level!="":
+                 wiktionaire[language_level].add(word)
+    return wiktionaire
+
 
 
 STOPWORDS=generate_stopwords()
 DICTIONARY=generate_dictionary()
-
-
-
+LANGUAGE_LEVEL=generate_language_level()
 
 csv.field_size_limit(100000000)
 
@@ -109,6 +120,13 @@ def generate_sources():
 
 #def generate_linkingwords():
 
+def get_language_level(language_level, word1, word2):
+    for level in language_level.keys():
+        if word1 in LANGUAGE_LEVEL[level] or word2 in LANGUAGE_LEVEL[level]:
+            language_level[level]+=1
+            return language_level
+    return language_level
+
 def calcul_verb(verbs, nb_verbs):
     result={}
 
@@ -116,6 +134,7 @@ def calcul_verb(verbs, nb_verbs):
     nb_fut_verbs=0
     nb_pres_verbs=0
     nb_imp_verbs=0
+    nb_conditional=0
     nb_other_verbs=0
 
     tenses=defaultdict(set)
@@ -127,6 +146,9 @@ def calcul_verb(verbs, nb_verbs):
             persons['plur']+=1
         elif 'Sing' in verb:
             persons['sing']+=1
+
+        if 'Mood=Cnd' in verb:
+            nb_conditional+=1
 
         tens=re.sub(PERSON, '', verb)
         if 'Pres' in tens:
@@ -168,7 +190,9 @@ def calcul_verb(verbs, nb_verbs):
         result['plur_verb_prop']=(persons['plur']/nb_verbs)
         result['sing_verb_prop']=(persons['sing']/nb_verbs)
 
+        result['conditional_prop']=nb_conditional/nb_verbs
         result['verbs_diversity']=(verbs_diversity/nb_verbs)
+
 
     else:
         result['past_verb_cardinality']=0
@@ -181,6 +205,8 @@ def calcul_verb(verbs, nb_verbs):
         result['pres_verb_prop']=0
         result['fut_verb_prop']=0
         result['imp_verb_prop']=0
+        result['conditional_prop']=0
+
 
         result['plur_verb_prop']=0
         result['sing_verb_prop']=0
@@ -189,11 +215,11 @@ def calcul_verb(verbs, nb_verbs):
 
     return result
 
-def calcul_punct(punctuations, nb_puncts):
-
+def calcul_punct(punctuations, nb_puncts, nb_tokens):
     nb_sent=0
     nb_quote=0
     nb_bracket=0
+    nb_comma=0
 
     result={}
 
@@ -204,6 +230,8 @@ def calcul_punct(punctuations, nb_puncts):
             nb_quote+=punctuations[punct]
         elif BRACKET.match(punct):
             nb_bracket+=punctuations[punct]
+        elif COMMA.search(punct):
+            nb_comma+=punctuations[punct]
 
     if nb_quote%2!=0 or nb_bracket%2!=0:
         if nb_quote%2!=0:
@@ -213,23 +241,26 @@ def calcul_punct(punctuations, nb_puncts):
     else:
         nb_quote=nb_quote/2
         nb_bracket=nb_bracket/2
+
     result={}
     question_prop=0
     exclamative_prop=0
     quote_prop=0
     bracket_prop=0
+    comma_prop=0
 
     if nb_sent>0:
         question_prop=(punctuations['?']/nb_sent)
         exclamative_prop=(punctuations['!']/nb_sent)
         quote_prop=(nb_quote/nb_sent)
         bracket_prop=(nb_bracket/nb_sent)
+        comma_prop=(nb_comma/nb_tokens)
 
     result['question_prop']=question_prop
     result['exclamative_prop']=exclamative_prop
     result['quote_prop']=quote_prop
     result['bracket_prop']=bracket_prop
-
+    result['comma_prop']=comma_prop
     return result
 
 def calcul_sttr(voc_mean):
@@ -239,21 +270,23 @@ def calcul_sttr(voc_mean):
     return {"sttr":sttr}
 
 def calcul_pos(pos_counting, nb_tokens):
-
     result={}
 
     if nb_tokens>0:
-        result['noun_prop']=(pos_counting['NOUN']/nb_tokens)
-        result['cconj_prop']=(pos_counting['CCONJ']/nb_tokens)
-        result['adj_prop']=(pos_counting['ADJ']/nb_tokens)
-        result['verb_prop']=((pos_counting['VERB']+pos_counting['AUX'])/nb_tokens)
-        result['adv_prop']=(pos_counting['ADV']/nb_tokens)
+        result['noun_prop']=pos_counting['NOUN']/nb_tokens
+        result['cconj_prop']=pos_counting['CCONJ']/nb_tokens
+        result['adj_prop']=pos_counting['ADJ']/nb_tokens
+        result['sconj_prop']=pos_counting['SCONJ']/nb_tokens
+        result['verb_prop']=(pos_counting['VERB']+pos_counting['AUX'])/nb_tokens
+        result['adv_prop']=pos_counting['ADV']/nb_tokens
     else:
         result['noun_prop']=0
         result['cconj_prop']=0
+        result['sconj_prop']=0
         result['adj_prop']=0
         result['verb_prop']=0
         result['adv_prop']=0
+
     return result
 
 #def calcul_ner(entities):
@@ -273,16 +306,21 @@ def pos_tagging(txt): #calcule certaines features en utilisant le pos tagging : 
     voc_mean=[]
     voc_counter=0
     voc=set()
-    nb_words=0
+    nb_word=0
+    nb_numbers=0
+    nb_pronp=0
+    language_level={"level0":0, "level2":0, "autre":0}
 
     for token in txt:
         pos_counting[token.pos_]+=1
-        nb_words+=1
+        language_level=get_language_level(language_level, token.lemma_, token.text)
+        if 'PUNCT' not in token.pos_ and 'SPACE' not in token.pos_:
+            nb_word+=1
 
-        if token.lemma_ in DICTIONARY or token.text in DICTIONARY:
-            voc_counter+=1
-            voc.add(token.text)
-            nb_dictwords+=1
+            if token.lemma_.lower() in DICTIONARY or token.text.lower() in DICTIONARY:
+                voc_counter+=1
+                voc.add(token.text)
+                nb_dictwords+=1
 
         if voc_counter==100:
             voc_mean.append((len(voc)/voc_counter))
@@ -292,29 +330,39 @@ def pos_tagging(txt): #calcule certaines features en utilisant le pos tagging : 
         if 'PUNCT' in token.pos_:
             punctuations[token.text]+=1
 
+        elif 'NUM' in token.pos_:
+            nb_numbers+=1
+
         elif 'VERB' in token.pos_ or 'AUX' in token.pos_:
            verbs.append(token.tag_)
 
+        elif 'PRON' in token.pos_ and 'PronType=Prs' in token.tag_:
+            nb_pronp+=1
 
     verbs_results={}
     punctuation_results={}
     pos_results={}
 
-
-    punctuation_results=calcul_punct(punctuations, pos_counting['PUNCT'])
+    punctuation_results=calcul_punct(punctuations, pos_counting['PUNCT'], len(txt))
     pos_results=calcul_pos(pos_counting,len(txt))
     sttr=calcul_sttr(voc_mean)
 
     verbs_results=calcul_verb(verbs, pos_counting['VERB']+pos_counting['AUX'])
     #ner_results=calcul_ner(entities)
-
     results={}
 
     results.update(verbs_results)
     results.update(punctuation_results)
     results.update(pos_results)
     results.update(sttr)
-    results["prop_dictwords"]=nb_dictwords/nb_words
+    results["dictwords_prop"]=nb_dictwords/nb_word
+    results["nb_word"]=nb_word
+    results["numbers_prop"]=nb_numbers/len(txt)
+    results["pronp_prop"]=nb_pronp/len(txt)
+    results["level0_prop"]=language_level["level0"]/nb_word
+    results["level2_prop"]=language_level["level2"]/nb_word
+    results["autre_prop"]=language_level["autre"]/nb_word
+
     #results.update(ner_results)
     return results
 
@@ -330,11 +378,11 @@ def count_subjectivity(txt, nb_word):
 
 def count_negation(txt, nb_word):
     negations=re.findall(NEGATION, txt)
-    prop_negation=0
+    negation_prop=0
 
     if nb_word>0:
-        prop_negation=(len(negations)/nb_word)
-    return {"prop_negation":prop_negation}
+        negation_prop=(len(negations)/nb_word)
+    return {"negation_prop":negation_prop}
 
 ##Pour utiliser NLTK
 
@@ -363,6 +411,8 @@ def calcul_voc(types, nb_word):
         #voc_diversity=types/(numpy.log(int(nb_word)))[0]
     return voc_diversity
 
+
+
 def calcul_ARI(txt): # on pourrait faire tout dans l'un à condition d'abandonner la médiane du nb de mots par phrase
 
     txt=squeeze(txt)
@@ -370,10 +420,11 @@ def calcul_ARI(txt): # on pourrait faire tout dans l'un à condition d'abandonne
     txt=[nltk.word_tokenize(sentence) for sentence in sentences]
 
     ARI=0.0
-    nb_word=0
     nb_char=0
+    nb_word=0
     nb_sentence=0
     TYPE=''
+    nb_dictwords=0
     nb_shortwords=0
     nb_longwords=0
     nb_stopwords=0
@@ -385,8 +436,8 @@ def calcul_ARI(txt): # on pourrait faire tout dans l'un à condition d'abandonne
     mean_ws=0
     median_cw=0
     median_ws=0
-    prop_shortwords=0
-    prop_longwords=0
+    shortwords_prop=0
+    longwords_prop=0
 
 
 
@@ -400,7 +451,8 @@ def calcul_ARI(txt): # on pourrait faire tout dans l'un à condition d'abandonne
             for word in sentence:
                 if is_char(word):
                     if len(word)<50:
-
+                        nb_word+=1
+                        word=word.lower()
                         letters=count_letters(letters, word)
                         nb_word+=1
                         nb_char+=len(word)
@@ -427,10 +479,9 @@ def calcul_ARI(txt): # on pourrait faire tout dans l'un à condition d'abandonne
         median_cw=median(nb_cw)
         median_ws=median(nb_ws)
 
-        prop_shortwords=(nb_shortwords/nb_word)
-        prop_longwords=(nb_longwords/nb_word)
+        shortwords_prop=(nb_shortwords/nb_word)
+        longwords_prop=(nb_longwords/nb_word)
 
-        #sttr=calcul_sttr(voc_mean)
         max_len_word=max(nb_cw)
         ARI=4.71*(mean_cw)+0.5*(mean_ws)-21.43
 
@@ -440,15 +491,14 @@ def calcul_ARI(txt): # on pourrait faire tout dans l'un à condition d'abandonne
     result={
         'ARI':ARI ,
         'nb_sent':nb_sentence,
-        'nb_word':nb_word,
         'nb_char':nb_char,
         'mean_cw':mean_cw,
         'mean_ws':mean_ws,
         'median_cw':median_cw,
         'median_ws':median_ws,
         'max_len_word':max_len_word,
-        'prop_shortwords':prop_shortwords,
-        'prop_longwords':prop_longwords
+        'shortwords_prop':shortwords_prop,
+        'longwords_prop':longwords_prop
         }
 
     if nb_char>0:
@@ -470,11 +520,29 @@ def calcul_features(path):
         return {}
 
     txt=clean(txt)
-    results.update(calcul_ARI(txt))
     results.update(pos_tagging(txt))
-    results.update(count_negation(txt,results['nb_word']))
+    results.update(calcul_ARI(txt))
+    results.update(count_negation(txt, results['nb_word']))
     results.update(count_subjectivity(txt, results['nb_word']))
 
+    return results
+
+def calcul_features_id(txt):
+    #path="sample/"+str(story_id)+".txt"
+
+    #try:
+    #    with open (path,'r') as ft:
+    #        txt=ft.read()
+    #except:
+    #    print('opening failed')
+    #    return {}
+    results={}
+    txt=clean(txt)
+    results.update(pos_tagging(txt))
+    results.update(calcul_ARI(txt, results['nb_word']))
+    results.update(count_negation(txt,results['nb_word']))
+    results.update(count_subjectivity(txt, results['nb_word']))
+    print(txt)
     return results
 
 ##### Fonction pour calculer les nouvelles features sur tous les textes et les enregistrées
@@ -488,6 +556,7 @@ def generator():
     reader=csv.DictReader(fs)
     i=0
     for row in reader:
+        print(row["stories_id"])
         yield (generate_path(row), row)
 
 def find_media_info(sources, media_id, info='level0'):
@@ -501,7 +570,7 @@ def ajout_info():
 
     with open('sample_normalized_sorted.csv', 'r') as fs:
         reader=csv.DictReader(fs)
-        reader.fieldnames+=['ARI', 'nb_sent', 'nb_word', 'nb_char', 'mean_cw', 'mean_ws', 'median_cw', 'median_ws', 'prop_shortwords' , 'prop_longwords' ,'max_len_word', 'prop_dictwords', 'voc_cardinality', 'prop_negation', 'subjectivity_prop', 'verb_prop', 'past_verb_cardinality', 'pres_verb_cardinality', 'fut_verb_cardinality', 'imp_verb_cardinality', 'other_verb_cardinality','past_verb_prop', 'pres_verb_prop', 'fut_verb_prop','imp_verb_prop', 'plur_verb_prop','sing_verb_prop','verbs_diversity','question_prop','exclamative_prop','quote_prop','bracket_prop','noun_prop','cconj_prop','adj_prop','adv_prop', 'a', 'e', 'i', 'l', 'n', 'o', 'sttr']
+        reader.fieldnames+=['ARI', 'nb_sent', 'nb_word', 'nb_char', 'mean_cw', 'mean_ws', 'median_cw', 'median_ws', 'shortwords_prop' , 'longwords_prop' ,'max_len_word', 'dictwords_prop', 'voc_cardinality', 'negation_prop', 'subjectivity_prop', 'verb_prop', 'past_verb_cardinality', 'pres_verb_cardinality', 'fut_verb_cardinality', 'imp_verb_cardinality', 'other_verb_cardinality','past_verb_prop', 'pres_verb_prop', 'fut_verb_prop','imp_verb_prop', 'plur_verb_prop','sing_verb_prop','verbs_diversity', 'conditional_prop','question_prop','exclamative_prop','quote_prop','bracket_prop','noun_prop','cconj_prop', 'sconj_prop', 'pronp_prop', 'adj_prop','adv_prop', 'a', 'e', 'i', 'l', 'n', 'o', 'sttr', 'comma_prop', 'numbers_prop', "level0_prop", "level2_prop", "autre_prop" ]
 
     fd=open('sample_with_features.csv', 'w')
     writer=csv.DictWriter(fd, fieldnames=reader.fieldnames)
@@ -527,4 +596,12 @@ def ajout_info():
 
 ajout_info()
 
+print("PROPN: ",spacy.explain("PROPN"))
+print("NUM: ",spacy.explain("NUM"))
+print("PART: ",spacy.explain("PART"))
+print("PRON: ",spacy.explain("PRON"))
+print("SCONJ: ",spacy.explain("SCONJ"))
 
+
+text="Sur une autre planète, aujourd'hui M. Dubois, O.N.U là où tout est beau, quelqu'un danse à mourir... Je ne te hais point etc. Je te nique FDP?! Bien qu'il soit petit et gros il vivra longtemps, on espère. Il est beau presque, finalement. On danse tous avec lui. Je ne sais pas quoi faire de ma peau. Je serais heureux, si tu venais plus souvent. Si la Terre n'était pas en danger, ils seraient une enfant et une putain merde. Malheureusement pour moi je ne vivrais sûrement rien faire de tout ça. Si seulement mes grands-parents n'étaient pas cons, j'aurais pu vivre de la permaculture."
+print(calcul_features_id(text))
