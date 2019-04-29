@@ -369,20 +369,23 @@ def pos_tagging(txt): #calcule certaines features en utilisant le pos tagging : 
 
 ## Pour les trucs avec re.match
 
-def count_subjectivity(txt, nb_word):
+def count_subjectivity(txt, nb_word, nb_sent):
     subjectivities=re.findall(SUBJ, txt)
-    subjectivity_prop=0
-    if nb_word>0:
-        subjectivity_prop=(len(subjectivities)/nb_word)
-    return {"subjectivity_prop":subjectivity_prop}
+    subjectivity_prop1=0
+    subjectivity_prop2=0
+    if nb_word>0 and nb_sent>0:
+        subjectivity_prop1=len(subjectivities)/nb_word
+        subjectivity_prop2=len(subjectivities)/nb_sent
+    return {"subjectivity_prop1":subjectivity_prop1, "subjectivity_prop2":subjectivity_prop2}
 
-def count_negation(txt, nb_word):
+def count_negation(txt, nb_word, nb_sent):
     negations=re.findall(NEGATION, txt)
-    negation_prop=0
-
-    if nb_word>0:
-        negation_prop=(len(negations)/nb_word)
-    return {"negation_prop":negation_prop}
+    negation_prop1=0
+    negation_prop2=0
+    if nb_word>0 and nb_sent>0:
+        negation_prop1=len(negations)/nb_word
+        negation_prop2=len(negations)/nb_sent
+    return {"negation_prop1":negation_prop1, "negation_prop2":negation_prop2}
 
 ##Pour utiliser NLTK
 
@@ -522,8 +525,8 @@ def calcul_features(path):
     txt=clean(txt)
     results.update(pos_tagging(txt))
     results.update(calcul_ARI(txt))
-    results.update(count_negation(txt, results['nb_word']))
-    results.update(count_subjectivity(txt, results['nb_word']))
+    results.update(count_negation(txt, results['nb_word'], results['nb_sent']))
+    results.update(count_subjectivity(txt, results['nb_word'], results['nb_sent']))
 
     return results
 
@@ -559,6 +562,7 @@ def generator():
         print(row["stories_id"])
         yield (generate_path(row), row)
 
+
 def find_media_info(sources, media_id, info='level0'):
     for source in sources:
         if source['id']==media_id:
@@ -570,13 +574,12 @@ def ajout_info():
 
     with open('sample_normalized_sorted.csv', 'r') as fs:
         reader=csv.DictReader(fs)
-        reader.fieldnames+=['ARI', 'nb_sent', 'nb_word', 'nb_char', 'mean_cw', 'mean_ws', 'median_cw', 'median_ws', 'shortwords_prop' , 'longwords_prop' ,'max_len_word', 'dictwords_prop', 'voc_cardinality', 'negation_prop', 'subjectivity_prop', 'verb_prop', 'past_verb_cardinality', 'pres_verb_cardinality', 'fut_verb_cardinality', 'imp_verb_cardinality', 'other_verb_cardinality','past_verb_prop', 'pres_verb_prop', 'fut_verb_prop','imp_verb_prop', 'plur_verb_prop','sing_verb_prop','verbs_diversity', 'conditional_prop','question_prop','exclamative_prop','quote_prop','bracket_prop','noun_prop','cconj_prop', 'sconj_prop', 'pronp_prop', 'adj_prop','adv_prop', 'a', 'e', 'i', 'l', 'n', 'o', 'sttr', 'comma_prop', 'numbers_prop', "level0_prop", "level2_prop", "autre_prop" ]
+        reader.fieldnames+=['ARI', 'nb_sent', 'nb_word', 'nb_char', 'mean_cw', 'mean_ws', 'median_cw', 'median_ws', 'shortwords_prop' , 'longwords_prop' ,'max_len_word', 'dictwords_prop', 'voc_cardinality', 'negation_prop1', 'negation_prop2', 'subjectivity_prop1', 'subjectivity_prop2', 'verb_prop', 'past_verb_cardinality', 'pres_verb_cardinality', 'fut_verb_cardinality', 'imp_verb_cardinality', 'other_verb_cardinality','past_verb_prop', 'pres_verb_prop', 'fut_verb_prop','imp_verb_prop', 'plur_verb_prop','sing_verb_prop','verbs_diversity', 'conditional_prop','question_prop','exclamative_prop','quote_prop','bracket_prop','noun_prop','cconj_prop', 'sconj_prop', 'pronp_prop', 'adj_prop','adv_prop', 'a', 'e', 'i', 'l', 'n', 'o', 'sttr', 'comma_prop', 'numbers_prop', "level0_prop", "level2_prop", "autre_prop" ]
 
     fd=open('sample_with_features.csv', 'w')
     writer=csv.DictWriter(fd, fieldnames=reader.fieldnames)
     writer.writeheader()
     times=[]
-
 
     i=0
     with Timer('multiprocessing babe'):
@@ -602,6 +605,4 @@ print("PART: ",spacy.explain("PART"))
 print("PRON: ",spacy.explain("PRON"))
 print("SCONJ: ",spacy.explain("SCONJ"))
 
-
 text="Sur une autre planète, aujourd'hui M. Dubois, O.N.U là où tout est beau, quelqu'un danse à mourir... Je ne te hais point etc. Je te nique FDP?! Bien qu'il soit petit et gros il vivra longtemps, on espère. Il est beau presque, finalement. On danse tous avec lui. Je ne sais pas quoi faire de ma peau. Je serais heureux, si tu venais plus souvent. Si la Terre n'était pas en danger, ils seraient une enfant et une putain merde. Malheureusement pour moi je ne vivrais sûrement rien faire de tout ça. Si seulement mes grands-parents n'étaient pas cons, j'aurais pu vivre de la permaculture."
-print(calcul_features_id(text))

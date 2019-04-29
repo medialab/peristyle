@@ -86,8 +86,9 @@ def generate_sources():
 
 def find_source(media_id):
     for source in SOURCES:
-        if int(source['id'])==media_id:
+        if int(source['id'])==int(media_id):
             return source
+    print(media_id, int(media_id))
     return False
 
 def produce_url():
@@ -102,9 +103,12 @@ def produce_url():
 
 URLS=produce_url()
 SOURCES=generate_sources()
-FEATURES_NAMES=['ARI', 'prop_shortwords' , 'prop_longwords' , 'prop_dictwords', 'sttr', 'prop_negation', 'subjectivity_prop', 'verb_prop','noun_prop','cconj_prop','adj_prop','adv_prop', "sttr"]
 
-#FEATURES_NAMES=['ARI', 'nb_sent', 'nb_word', 'nb_char', 'mean_cw', 'mean_ws', 'prop_shortwords' , 'prop_longwords' , 'prop_dictwords', 'sttr', 'prop_negation', 'subjectivity_prop', 'verb_prop', 'question_prop','exclamative_prop','quote_prop','bracket_prop','noun_prop','cconj_prop','adj_prop','adv_prop']
+#FEATURES_NAMES=['ARI', 'shortwords_prop' , 'longwords_prop' , 'dictwords_prop', 'sttr', 'negation_prop1', 'subjectivity_prop1', 'verb_prop','noun_prop','cconj_prop','adj_prop','adv_prop', "sttr"]
+#FEATURES_NAMES=['ARI', 'nb_sent', 'nb_word', 'nb_char', 'mean_cw', 'mean_ws', 'shortwords_prop' , 'longwords_prop' , 'dictwords_prop', 'sttr', 'negation_prop1', 'subjectivity_prop1', 'verb_prop', 'question_prop','exclamative_prop','quote_prop','bracket_prop','noun_prop','cconj_prop','adj_prop','adv_prop']
+FEATURES_NAMES=['ARI', 'nb_sent', 'nb_word', 'nb_char', 'mean_cw', 'mean_ws', 'shortwords_prop' , 'longwords_prop' , 'dictwords_prop', 'negation_prop2', 'subjectivity_prop2', 'verb_prop', 'past_verb_prop', 'pres_verb_prop', 'fut_verb_prop', 'conditional_prop','question_prop','exclamative_prop','quote_prop','bracket_prop','noun_prop','cconj_prop', 'sconj_prop', 'pronp_prop', 'adj_prop','adv_prop', 'sttr', 'comma_prop', 'numbers_prop', 'level0_prop', 'level2_prop', 'autre_prop']
+
+nb_component= 3
 
 
 def create_matrix(media_wanted_id=0):
@@ -133,10 +137,10 @@ def pca_function(matrix, media_wanted_id=0):
     stories_id=matrix[:,0]
     medias_id=matrix[:,1]
     features=matrix[:,2:]
-    n_components = 2
+
 
     features=scale(features)
-    pca = PCA(n_components=n_components)
+    pca = PCA(n_components=nb_component)
     x_pca=pca.fit_transform(features)
     ordered_components={}
 
@@ -161,48 +165,64 @@ def pca_function(matrix, media_wanted_id=0):
         ordered_components[i]=ordered_component
 
         i+=1
-        print(ordered_component.items())
+        print("")
+        print("ORDERED COMPONENT ", ordered_component.items())
+        print("")
+        print("NOT ORDERED ", component.items())
         print("")
 
 
 
-    values=defaultdict(lambda: defaultdict(int))
-    component0=ordered_components[0]
-    component1=ordered_components[1]
+    if nb_component==3:
+        values=defaultdict(lambda: defaultdict(int))
+        component0=ordered_components[0]
+        component1=ordered_components[1]
+        component2=ordered_components[2]
 
-    for feature0, feature1 in zip(component0.keys(), component1.keys()):
-        values[feature0]["x"]=component0[feature0]
-        values[feature1]["y"]=component1[feature1]
+        for feature0, feature1, feature2 in zip(component0.keys(), component1.keys(), component2.keys()):
+            values[feature0]["x"]=component0[feature0]
+            values[feature1]["y"]=component1[feature1]
+            values[feature2]["z"]=component2[feature2]
+        data=[]
 
-    data=[]
-
-    if media_wanted_id==0:
         for feature in values:
-            value_zero={"feature":feature, "middle":"no", "x":0, "y":0}
-            value={"feature":feature, "middle":"yes", "x":values[feature]["x"]*10, "y":values[feature]["y"]*10}
+            value_zero={"feature":feature, "middle":"no", "x":0, "y":0, "z":0,  "x_color":values[feature]["x"]*10  ,"y_color":values[feature]["y"]*10 ,"z_color":values[feature]["z"]*10}
+            value={"feature":feature, "middle":"yes", "x":values[feature]["x"]*10, "y":values[feature]["y"]*10, "z":values[feature]["z"]*10,  "x_color":values[feature]["x"]*10  ,"y_color":values[feature]["y"]*10 ,"z_color":values[feature]["z"]*10}#####ICI POUR CHANGER LA TAILLE DES VECTEURS
 
             data.append(value)
             data.append(value_zero)
 
+            with open('vector_data.json','w') as fd:
+                json.dump(data, fd, indent=2, ensure_ascii=False)
 
-        with open('vector_data.json','w') as fd:
-            json.dump(data, fd, indent=2, ensure_ascii=False)
-    else:
+    elif nb_component==2:
+        values=defaultdict(lambda: defaultdict(int))
+        component0=ordered_components[0]
+        component1=ordered_components[1]
+
+        for feature0, feature1 in zip(component0.keys(), component1.keys()):
+            values[feature0]["x"]=component0[feature0]
+            values[feature1]["y"]=component1[feature1]
+        data=[]
+
         for feature in values:
-            value_zero={"feature":feature, "middle":"no", "x":0, "y":0, "media":media_wanted_id}
-            value={"feature":feature, "middle":"yes", "x":values[feature]["x"]*10, "y":values[feature]["y"]*10, "media":media_wanted_id}
+            value_zero={"feature":feature, "middle":"no", "x":0, "y":0,  "x_color":values[feature]["x"]*10  ,"y_color":values[feature]["y"]*10}
+            value={"feature":feature, "middle":"yes", "x":values[feature]["x"]*10, "y":values[feature]["y"]*10,  "x_color":values[feature]["x"]*10  ,"y_color":values[feature]["y"]*10 }#####ICI POUR CHANGER LA TAILLE DES VECTEURS
 
             data.append(value)
             data.append(value_zero)
 
-        with open('vector_per_media_data.json','a') as fd:
-            json.dump(data, fd, indent=2, ensure_ascii=False)
+            with open('vector_data.json','w') as fd:
+                json.dump(data, fd, indent=2, ensure_ascii=False)
+
 
     print("explained_variance_ratio_: ", pca.explained_variance_ratio_)
     somme=0
     for value in pca.explained_variance_ratio_:
         somme+=value
-    print("somme explained ratio: ", somme)
+
+
+    print("somme explained variance ratio: ", somme)
 
     print("n_components: ",pca.n_components_)
 
@@ -223,17 +243,34 @@ def produce_data(x_pca, option="none"):
         index = np.random.choice(x_pca.shape[0], n, replace=False)
 
         for i in index:
-            value={}
-            media=find_source(x_pca[i,2])
-            for key in media.keys():
-                value[key]=media[key]
-            value['url']=URLS[int(x_pca[i,3])]
-            value['story_id']=x_pca[i, 3]
-            value['media_id']=x_pca[i, 2]
-            value['x']=x_pca[i, 0]
-            value['y']=x_pca[i, 1]
+            if nb_component==3:
+                value={}
+                media=find_source(x_pca[i,3])
+                for key in media.keys():
+                    value[key]=media[key]
+                value['url']=URLS[int(x_pca[i,4])]
+                value['story_id']=x_pca[i, 4]
+                value['media_id']=x_pca[i, 3]
+                value['x']=x_pca[i, 0]
+                value['y']=x_pca[i, 1]
+                value['z']=x_pca[i, 2]
 
-            values.append(value)
+                values.append(value)
+
+            else:
+                value={}
+                media=find_source(x_pca[i,2])
+                for key in media.keys():
+                    value[key]=media[key]
+                value['url']=URLS[int(x_pca[i,3])]
+                value['story_id']=x_pca[i, 3]
+                value['media_id']=x_pca[i, 2]
+                value['x']=x_pca[i, 0]
+                value['y']=x_pca[i, 1]
+
+
+                values.append(value)
+
 
     elif option=="all":
         for i in range(x_pca.shape[0]):
@@ -249,6 +286,34 @@ def produce_data(x_pca, option="none"):
 
             values.append(value)
     return values
+
+def produce_mean_data(x_pca):
+
+
+    mean_data=defaultdict(lambda: defaultdict(list))
+    n=10000
+    index = np.random.choice(x_pca.shape[0], n, replace=False)
+
+    for i in index:
+        media_id=x_pca[i, 3]
+        mean_data[media_id]["x"].append(x_pca[i, 0])
+        mean_data[media_id]["y"].append(x_pca[i, 1])
+        mean_data[media_id]["z"].append(x_pca[i, 2])
+
+    values=[]
+    for media_id in mean_data.keys():
+        value={}
+        media=find_source(int(media_id))
+        for key in media.keys():
+            value[key]=media[key]
+        value["x"]=mean(mean_data[media_id]["x"])
+        value["y"]=mean(mean_data[media_id]["y"])
+        value["z"]=mean(mean_data[media_id]["z"])
+        values.append(value)
+
+
+    return values
+
 
 def study_features(media_wanted_id=0):
     with open('sample_with_features.csv', 'r') as f:
@@ -321,6 +386,15 @@ def pca_all_stories():
     with open('reg_dim_data.json','w') as fd:
         json.dump(data, fd, indent=2, ensure_ascii=False)
 
+
+    """
+    values=produce_mean_data(x_pca)
+    data={"values":values}
+
+    with open('reg_dim_mean_data.json','w') as fd:
+        json.dump(data, fd, indent=2, ensure_ascii=False)
+    """
+
     #print("    STUDY FEATURES")
     #study_features()
     return 0
@@ -351,6 +425,12 @@ def pca_media_stories(media_wanted_id=0):
 
     with open('reg_dim_per_media_data.json','w') as fd:
         json.dump(data, fd, indent=2, ensure_ascii=False)
+
+    x_mean=[]
+    y_mean=[]
+    z_mean=[]
+
+
 
     return 0
 
