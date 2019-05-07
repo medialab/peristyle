@@ -81,7 +81,6 @@ for row in reader:
         with open ("sample/"+row["stories_id"]+".txt",'r') as ft:
             txt=ft.read()
     except:
-        print("cac")
         continue
 
     row["language"]=detect(txt)
@@ -152,4 +151,4 @@ with open("sample_filtered_with_features.csv", "r") as f:
 
 
 with open('features_data.json','w') as f:
-    json.dump(values, f, indent=2, ensure_ascii=False )
+    json.dump(values, f, indent=2, ensure_ascii=False)
