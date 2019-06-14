@@ -8,20 +8,20 @@ from langdetect import detect
 
 def generate_sources():
 
-    f2=open('sources.csv', 'r')
+    f2=open("tables/sources.csv", "r")
     sources=csv.DictReader(f2)
 
     sources_list=list()
 
     for row in sources:
-        source={'url': row['url'],
-                'name':row['name'],
-                'id':row['id'],
-                'politics':row['politics'],
-                'level0':row['level0_title'],
-                'level1':row['level1_title'],
-                'level2':row['level2_title'],
-                'webentity':row['webentity']
+        source={"url": row["url"],
+                "name":row["name"],
+                "id":row["id"],
+                "politics":row["politics"],
+                "level0":row["level0_title"],
+                "level1":row["level1_title"],
+                "level2":row["level2_title"],
+                "webentity":row["webentity"]
                 }
         sources_list.append(source)
 
@@ -30,9 +30,9 @@ def generate_sources():
     return sources_list
 
 def generate_paywalls():
-    with open ('paywall.csv', 'r') as f:
+    with open ("tables/paywall.csv", "r") as f:
         paywalls_file=csv.DictReader(f)
-        paywalls=[{"media_id":int(row['media_id']), "partial_paywall":row['partial_paywall']} for row in paywalls_file]
+        paywalls=[{"media_id":int(row["media_id"]), "partial_paywall":row["partial_paywall"]} for row in paywalls_file]
     return paywalls
 
 
@@ -45,19 +45,21 @@ def is_paywall(media_id):
 
 def find_media_info(media_id):
     for source in SOURCES:
-        if source['id']==media_id:
+        if source["id"]==media_id:
             return source
     return False
 
 
-fs=open("sample_with_features.csv", "r")
+
+fs=open("tables/sample_with_features.csv", "r")
 reader=csv.DictReader(fs)
 
-fd=open("sample_filtered_with_features.csv", "w")
+fd=open("tables/sample_filtered_with_features.csv", "w")
 fieldnames=reader.fieldnames+["filter", "paywall_media", "language", "reason"]
 
 writer=csv.DictWriter(fd, fieldnames=fieldnames)
 writer.writeheader()
+
 stories_counter=defaultdict(int)
 rows=[]
 
@@ -76,9 +78,8 @@ for row in reader:
             row["filter"]=True
             row["reason"]="paywall"
 
-
     try:
-        with open ("sample/"+row["stories_id"]+".txt",'r') as ft:
+        with open ("sample/"+row["stories_id"]+".txt","r") as ft:
             txt=ft.read()
     except:
         continue
@@ -121,24 +122,26 @@ for row in reader:
 print(stories_counter)
 
 fs.close()
-
+i=0
 for row in rows:
-    if row["filter"]==False and stories_counter[row["media_id"]]<10:
+    if row["filter"]==False and stories_counter[row["media_id"]]<20:
+        i+=1
         row["filter"]=True
-        row ["reason"]="media with less then 10 stories"
+        row ["reason"]="media with less then 20 stories"
     writer.writerow(row)
 
+print(i)
 fd.close()
 
 
 
 values=[]
-with open("sample_filtered_with_features.csv", "r") as f:
+with open("tables/sample_filtered_with_features.csv", "r") as f:
     sample=csv.DictReader(f)
 
     for row in sample:
 
-        info=find_media_info(row['media_id'])
+        info=find_media_info(row["media_id"])
         value={}
 
         if "" not in info and row["filter"]=="False":
@@ -150,5 +153,5 @@ with open("sample_filtered_with_features.csv", "r") as f:
             values.append(value)
 
 
-with open('features_data.json','w') as f:
+with open("visualization/data/features_data.json","w") as f:
     json.dump(values, f, indent=2, ensure_ascii=False)

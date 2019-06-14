@@ -6,6 +6,7 @@ import nltk
 import ural
 import spacy
 import numpy
+import os
 from nltk.tokenize import sent_tokenize
 from ural import LRUTrie
 from statistics import median
@@ -43,7 +44,9 @@ COMMA=re.compile(r",")
 NOT_CHAR=re.compile(r"[.!?,;:\"\-\s\n\r_()\[\]«»’`/\"0-9]+")
 CHAR=re.compile(r"[a-zéèà]")
 NEGATION=re.compile(r"\bne\b|\bn'\b|\bnon\b", re.I)
-SUBJ=re.compile(r"\bje\b|\bma\b|\bme\b|\bmon\b|\bmes\b|\bj'\b|\bm'\b|\bmien\b|\bmienne\b", re.I)
+SUBJ=re.compile(r"\bje\b|\bma\b|\bme\b|\bmon\b|\bmes\b|\bj'\b|\bm'\b|\bmien\b|\bmienne\b|\bmiens\b|\bmiennes\b", re.I)
+INTERPEL=re.compile(r"\btu\b|\bt'\b|\bte\b|\btes\b|\bton\b|\bta\b|\btien\b|\btiens\b|\btienne\b|\btiennes\b|\bvous\b|\bvos\b|\bvotre\b|\bvôtre\b|\bvôtres\b", re.I)
+NOUS=re.compile(r"\bnous\b|\bnos\b|\bnotre\b|\bnrôte\b|\bnôtres\b", re.I)
 QUOTE=re.compile(r"[\"«»]")
 BRACKET=re.compile(r"[(){}\[\]]")
 
@@ -329,6 +332,7 @@ def pos_tagging(txt): #calcule certaines features en utilisant le pos tagging : 
     language_level={"level0":0, "level1":0, "level2":0, "autre":0}
 
     for token in txt:
+        print(token)
         pos_counting[token.pos_]+=1
         language_level=get_language_level(language_level, token.lemma_, token.text)
         if "PUNCT" not in token.pos_ and "SPACE" not in token.pos_:
@@ -393,6 +397,25 @@ def pos_tagging(txt): #calcule certaines features en utilisant le pos tagging : 
 
 ## Pour les trucs avec re.match
 
+def count_interpellation(txt, nb_word, nb_sent) :
+    interpellations=re.findall(INTERPEL, txt)
+    interpellation_prop1=0
+    interpellation_prop2=0
+    if nb_word>0 and nb_sent>0:
+        interpellation_prop1=len(interpellations)/nb_word
+        interpellation_prop2=len(interpellations)/nb_sent
+    return {"interpellation_prop1":interpellation_prop1, "interpellation_prop2":interpellation_prop2}
+
+def count_nous(txt, nb_word, nb_sent) :
+    nous=re.findall(NOUS, txt)
+    nous_prop1=0
+    nous_prop2=0
+    if nb_word>0 and nb_sent>0:
+        nous_prop1=len(nous)/nb_word
+        nous_prop2=len(nous)/nb_sent
+    return {"nous_prop1":nous_prop1, "nous_prop2":nous_prop2}
+
+
 def count_subjectivity(txt, nb_word, nb_sent):
     subjectivities=re.findall(SUBJ, txt)
     subjectivity_prop1=0
@@ -422,6 +445,7 @@ def count_letters(letters, word):
 
     return letters
 
+"""
 def calcul_letters(letters, nb_char):
     for letter in letters.keys():
         if nb_char>0:
@@ -429,7 +453,7 @@ def calcul_letters(letters, nb_char):
         else:
             letters[letter]=0
     return letters
-
+"""
 
 def calcul_voc(types, nb_word):
     voc_diversity=0
@@ -480,10 +504,13 @@ def calcul_ARI(txt): # on pourrait faire tout dans l"un à condition d"abandonne
                     if len(word)<50:
                         nb_word+=1
                         word=word.lower()
-                        letters=count_letters(letters, word)
+
                         nb_word+=1
                         nb_char+=len(word)
                         nb_cw.append(len(word))
+
+                        if nb_char<100:
+                            letters=count_letters(letters, word)
 
                         if len(word)<5:
                             nb_shortwords+=1
@@ -528,8 +555,9 @@ def calcul_ARI(txt): # on pourrait faire tout dans l"un à condition d"abandonne
         "longwords_prop":longwords_prop
         }
 
-    if nb_char>0:
-        result.update(calcul_letters(letters, nb_char))
+    #if nb_char>0:
+        #result.update(calcul_letters(letters, nb_char))
+    result.update({"a":letters["a"], "e":letters["e"], "l":letters["l"], "o":letters["o"], "i":letters["i"], "n":letters["n"]})
 
     return result
 
@@ -542,35 +570,38 @@ def calcul_features(path):
     try:
         with open (path[0],"r") as ft:
             txt=ft.read()
+
     except:
         print("opening failed")
-        return {}
+        return False
 
-    txt=clean(txt)
-    results.update(pos_tagging(txt))
-    results.update(calcul_ARI(txt))
-    results.update(count_negation(txt, results["nb_word"], results["nb_sent"]))
-    results.update(count_subjectivity(txt, results["nb_word"], results["nb_sent"]))
-
-    return results
-
-def calcul_features_id(txt):
-    #path="sample/"+str(story_id)+".txt"
-
-    #try:
-    #    with open (path,"r") as ft:
-    #        txt=ft.read()
-    #except:
-    #    print("opening failed")
-    #    return {}
     results={}
     txt=clean(txt)
     results.update(pos_tagging(txt))
-    results.update(calcul_ARI(txt, results["nb_word"]))
-    results.update(count_negation(txt,results["nb_word"]))
-    results.update(count_subjectivity(txt, results["nb_word"]))
-    print(txt)
+    results.update(calcul_ARI(txt))
+    results.update(count_negation(txt,results["nb_word"], results["nb_sent"]))
+    results.update(count_interpellation(txt, results["nb_word"], results["nb_sent"]))
+    results.update(count_nous(txt, results["nb_word"], results["nb_sent"]))
+    results.update(count_subjectivity(txt, results["nb_word"],  results["nb_sent"]))
+
     return results
+
+def calcul_features_id(story):
+
+    with open ("testing_stories/sample/" + story,"r") as ft:
+        txt = ft.read()
+
+    results={}
+    txt=clean(txt)
+    results.update(pos_tagging(txt))
+    results.update(calcul_ARI(txt))
+    results.update(count_negation(txt,results["nb_word"], results["nb_sent"]))
+    results.update(count_interpellation(txt, results["nb_word"], results["nb_sent"]))
+    results.update(count_nous(txt, results["nb_word"], results["nb_sent"]))
+    results.update(count_subjectivity(txt, results["nb_word"],  results["nb_sent"]))
+    return results
+
+
 
 ##### Fonction pour calculer les nouvelles features sur tous les textes et les enregistrées
 
@@ -598,7 +629,7 @@ def ajout_info():
 
     with open("tables/sample_normalized_sorted.csv", "r") as fs:
         reader=csv.DictReader(fs)
-        reader.fieldnames+=["ARI", "nb_sent", "nb_word", "nb_char", "mean_cw", "mean_ws", "median_cw", "median_ws", "shortwords_prop" , "longwords_prop" ,"max_len_word", "dictwords_prop", "proper_noun_prop", "voc_cardinality", "negation_prop1", "negation_prop2", "subjectivity_prop1", "subjectivity_prop2", "verb_prop", "past_verb_cardinality", "pres_verb_cardinality", "fut_verb_cardinality", "imp_verb_cardinality", "other_verb_cardinality","past_verb_prop", "pres_verb_prop", "fut_verb_prop","imp_verb_prop", "plur_verb_prop","sing_verb_prop","verbs_diversity", "conditional_prop","question_prop","exclamative_prop","quote_prop","bracket_prop","noun_prop","cconj_prop", "sconj_prop", "pronp_prop", "adj_prop","adv_prop", "a", "e", "i", "l", "n", "o", "sttr", "comma_prop", "numbers_prop", "level0_prop", "level1_prop", "level2_prop", "autre_prop", "ner_prop", "person_prop", "norp_prop", "fac_prop", "org_prop", "gpe_prop", "loc_prop", "product_prop", "event_prop" ]
+        reader.fieldnames+=["ARI", "nb_sent", "nb_word", "nb_char", "mean_cw", "mean_ws", "median_cw", "median_ws", "shortwords_prop" , "longwords_prop" ,"max_len_word", "dictwords_prop", "proper_noun_prop", "negation_prop1", "negation_prop2", "subjectivity_prop1", "subjectivity_prop2", "interpellation_prop1", "interpellation_prop2", "nous_prop1", "nous_prop2", "verb_prop", "past_verb_cardinality", "pres_verb_cardinality", "fut_verb_cardinality", "imp_verb_cardinality", "other_verb_cardinality","past_verb_prop", "pres_verb_prop", "fut_verb_prop","imp_verb_prop", "plur_verb_prop","sing_verb_prop","verbs_diversity", "conditional_prop","question_prop","exclamative_prop","quote_prop","bracket_prop","noun_prop","cconj_prop", "sconj_prop", "pronp_prop", "adj_prop","adv_prop", "a", "e", "i", "l", "n", "o", "sttr", "comma_prop", "numbers_prop", "level0_prop", "level1_prop", "level2_prop", "autre_prop", "ner_prop", "person_prop", "norp_prop", "fac_prop", "org_prop", "gpe_prop", "loc_prop", "product_prop", "event_prop" ]
 
     fd=open("tables/sample_with_features.csv", "w")
     writer=csv.DictWriter(fd, fieldnames=reader.fieldnames)
@@ -617,14 +648,29 @@ def ajout_info():
 
     return 0
 
+def add_other_stories():
+    fd = open("testing_stories/testing_stories_features.csv", "w")
+    fieldnames = ["story" ,"ARI", "nb_sent", "nb_word", "nb_char", "mean_cw", "mean_ws", "median_cw", "median_ws", "shortwords_prop" , "longwords_prop" ,"max_len_word", "dictwords_prop", "proper_noun_prop", "negation_prop1", "negation_prop2", "subjectivity_prop1", "subjectivity_prop2", "interpellation_prop1", "interpellation_prop2", "nous_prop1", "nous_prop2", "verb_prop", "past_verb_cardinality", "pres_verb_cardinality", "fut_verb_cardinality", "imp_verb_cardinality", "other_verb_cardinality","past_verb_prop", "pres_verb_prop", "fut_verb_prop","imp_verb_prop", "plur_verb_prop","sing_verb_prop","verbs_diversity", "conditional_prop","question_prop","exclamative_prop","quote_prop","bracket_prop","noun_prop","cconj_prop", "sconj_prop", "pronp_prop", "adj_prop","adv_prop", "a", "e", "i", "l", "n", "o", "sttr", "comma_prop", "numbers_prop", "level0_prop", "level1_prop", "level2_prop", "autre_prop", "ner_prop", "person_prop", "norp_prop", "fac_prop", "org_prop", "gpe_prop", "loc_prop", "product_prop", "event_prop" ]
+    writer = csv.DictWriter(fd, fieldnames = fieldnames)
+    writer.writeheader()
+
+    for story in os.listdir('./testing_stories/sample'):
+        print(story)
+        result = calcul_features_id(story)
+        result["story"] = story[:-4]
+
+
+        if result["ARI"] <30 and 0<result["ARI"] and result["nb_word"] != 0 and result["nb_sent"] <= 3 and result["nb_word"]>250 and 1500>result["nb_word"]:
+            writer.writerow(result)
+
+    fd.close()
+    return 'YOOOO'
+
+add_other_stories()
+
+
 
 
 #### Bonjor on travaille ####
 
-ajout_info()
-
-print("PROPN: ",spacy.explain("PROPN"))
-print("NUM: ",spacy.explain("NUM"))
-print("PART: ",spacy.explain("PART"))
-print("PRON: ",spacy.explain("PRON"))
-print("SCONJ: ",spacy.explain("SCONJ"))
+#ajout_info()

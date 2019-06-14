@@ -23,20 +23,20 @@ from math import sqrt, pow, isclose
 
 def generate_sources():
 
-    f2=open('sources.csv', 'r')
+    f2=open("tables/sources.csv", "r")
     sources=csv.DictReader(f2)
 
     sources_list=[]
 
     for row in sources:
-        source={'url': row['url'],
-                'name':row['name'],
-                'id':row['id'],
-                'politics':row['politics'],
-                'level0':row['level0_title'],
-                'level1':row['level1_title'],
-                'level2':row['level2_title'],
-                'webentity':row['webentity']}
+        source={"url": row["url"],
+                "name":row["name"],
+                "id":row["id"],
+                "politics":row["politics"],
+                "level0":row["level0_title"],
+                "level1":row["level1_title"],
+                "level2":row["level2_title"],
+                "webentity":row["webentity"]}
         sources_list.append(source)
 
     f2.close()
@@ -45,27 +45,30 @@ def generate_sources():
 
 SOURCES=generate_sources()
 
-#FEATURES_NAMES=['ARI', 'shortwords_prop' , 'longwords_prop' , 'dictwords_prop', 'sttr', 'negation_prop1', 'subjectivity_prop1', 'verb_prop','noun_prop','cconj_prop','adj_prop','adv_prop', "sttr"]
-
-#FEATURES_NAMES=['ARI', 'shortwords_prop' , 'longwords_prop' , 'dictwords_prop', 'sttr', 'negation_prop1', 'subjectivity_prop1', 'verb_prop','noun_prop','cconj_prop','adj_prop','adv_prop', "sttr"]
-#FEATURES_NAMES=['ARI', 'nb_sent', 'nb_word', 'nb_char', 'mean_cw', 'mean_ws', 'shortwords_prop' , 'longwords_prop' , 'dictwords_prop', 'sttr', 'negation_prop1', 'subjectivity_prop1', 'verb_prop', 'question_prop','exclamative_prop','quote_prop','bracket_prop','noun_prop','cconj_prop','adj_prop','adv_prop']
-FEATURES_NAMES=['ARI', 'nb_sent', 'nb_word', 'nb_char', 'mean_cw', 'mean_ws', 'shortwords_prop' , 'longwords_prop' , 'dictwords_prop', 'negation_prop2', 'subjectivity_prop2', 'verb_prop', 'past_verb_prop', 'pres_verb_prop', 'fut_verb_prop', 'conditional_prop','question_prop','exclamative_prop','quote_prop','bracket_prop','noun_prop','cconj_prop', 'sconj_prop', 'pronp_prop', 'adj_prop','adv_prop', 'sttr', 'comma_prop', 'numbers_prop', 'level0_prop', 'level2_prop', 'autre_prop']
-n_components = 3
-
-
 def find_source(media_id):
     for source in SOURCES:
-        if int(source['id'])==media_id:
+        if int(source["id"])==media_id:
             return source
     return False
 
-SOURCES=generate_sources()
+
+#FEATURES_NAMES=["ARI", "shortwords_prop" , "longwords_prop" , "dictwords_prop", "sttr", "negation_prop1", "subjectivity_prop1", "verb_prop","noun_prop","cconj_prop","adj_prop","adv_prop", "sttr"]
+
+#FEATURES_NAMES=["ARI", "shortwords_prop" , "longwords_prop" , "dictwords_prop", "sttr", "negation_prop1", "subjectivity_prop1", "verb_prop","noun_prop","cconj_prop","adj_prop","adv_prop", "sttr"]
+#FEATURES_NAMES=["ARI", "nb_sent", "nb_word", "nb_char", "mean_cw", "mean_ws", "shortwords_prop" , "longwords_prop" , "dictwords_prop", "sttr", "negation_prop1", "subjectivity_prop1", "verb_prop", "question_prop","exclamative_prop","quote_prop","bracket_prop","noun_prop","cconj_prop","adj_prop","adv_prop"]
+#FEATURES_NAMES=["ARI", "nb_sent", "nb_word", "nb_char", "mean_cw", "mean_ws", "shortwords_prop" , "longwords_prop" , "dictwords_prop", "negation_prop2", "subjectivity_prop2", "verb_prop", "past_verb_prop", "pres_verb_prop", "fut_verb_prop", "conditional_prop","question_prop","exclamative_prop","quote_prop","bracket_prop","noun_prop","cconj_prop", "sconj_prop", "pronp_prop", "adj_prop","adv_prop", "sttr", "comma_prop", "numbers_prop", "level0_prop", "level2_prop", "autre_prop"]
+FEATURES_NAMES=["ARI", "nb_sent", "nb_word", "nb_char", "mean_cw", "mean_ws", "shortwords_prop" , "longwords_prop" , "dictwords_prop", "proper_noun_prop", "negation_prop1", "subjectivity_prop1", "verb_prop","past_verb_prop", "pres_verb_prop", "fut_verb_prop","imp_verb_prop", "plur_verb_prop","sing_verb_prop", "conditional_prop","question_prop","exclamative_prop","quote_prop","bracket_prop","noun_prop","cconj_prop", "sconj_prop", "pronp_prop", "adj_prop","adv_prop", "sttr", "comma_prop", "numbers_prop", "level0_prop", "level1_prop", "level2_prop", "autre_prop", "ner_prop", "person_prop", "norp_prop", "fac_prop", "org_prop", "gpe_prop", "loc_prop", "product_prop", "event_prop", """interpellation_prop1", "nous_prop1"""]
+
+
+n_components = 3
 
 def create_matrix():
 
-    f=open('media_with_mean_features.csv', 'r', encoding='latin1')
+    ### Get media values
+    f=open("tables/media_with_mean_features.csv", "r", encoding="latin1")
     samples_media=csv.DictReader(f)
     matrix_media=[]
+
     for row in samples_media:
         sample=(row["id"],)
         for feature in FEATURES_NAMES:
@@ -79,9 +82,12 @@ def create_matrix():
 
     matrix_media = np.array(matrix_media)
     f.close()
-    f=open('sample_filtered_with_features.csv', 'r', encoding='latin1')
+
+    ### Get stories values
+    f=open("tables/sample_filtered_with_features.csv", "r", encoding="latin1")
     samples_stories=csv.DictReader(f)
     matrix_stories=[]
+
     for row in samples_stories:
         if row["filter"]=="False":
             sample=(row["stories_id"], row["media_id"], row["url"])
@@ -92,7 +98,7 @@ def create_matrix():
                     row[feature]=0
                 sample+=(row[feature],)
 
-            if sample and sum!=0:
+            if sample:
                 matrix_stories.append(sample)
 
     matrix_stories = np.array(matrix_stories)
@@ -100,23 +106,15 @@ def create_matrix():
 
     return (matrix_media,matrix_stories)
 
+
+    ### PCA fit transform for media, initialise pca
 def pca_function(matrix):
 
     medias_id=matrix[:,0]
     features=matrix[:,1:]
-    features=scale(features)
-    maximums={}
-    for i, feature in enumerate(FEATURES_NAMES):
-        maximum=max(features[:,i])
-        minimum=min(features[:,i])*(-1)
-        if minimum>maximum:
-            maximum=minimum
-        maximums[feature]=maximum
-
 
     pca = PCA(n_components=n_components)
     x_pca=pca.fit_transform(features)
-
 
     i=0
     ordered_components={}
@@ -129,8 +127,8 @@ def pca_function(matrix):
         print("median ",median(component.values()))
         print("stdev ",stdev(component.values()))
         print(type(component.values()))
-        print('q1 ',np.percentile([value for value in component.values()],25))
-        print('q2 ',np.percentile([value for value in component.values()],75))
+        print("q1 ",np.percentile([value for value in component.values()],25))
+        print("q2 ",np.percentile([value for value in component.values()],75))
         maximum=max(component.values())
         minimum=min(component.values())
         print("max ", [(key, component[key]) for key in component.keys() if component[key]==maximum])
@@ -145,9 +143,13 @@ def pca_function(matrix):
         print("")
         i+=1
 
+
+
     values=defaultdict(lambda: defaultdict(int))
     component0=ordered_components[0]
     component1=ordered_components[1]
+
+    print(values)
 
     if n_components==3:
         component2=ordered_components[2]
@@ -160,9 +162,11 @@ def pca_function(matrix):
             for feature in values:
                 value_zero={"feature":feature,"name":"no", "x":0, "y":0, "z":0, "x_color":values[feature]["x"]*10  ,"y_color":values[feature]["y"]*10 ,"z_color":values[feature]["z"]*10, }
                 value={"feature":feature,"name":"yes", "x":(values[feature]["x"]*10), "y":values[feature]["y"]*10, "z":values[feature]["z"]*10, "x_color":values[feature]["x"]*10  ,"y_color":values[feature]["y"]*10 ,"z_color":values[feature]["z"]*10}
-
                 data.append(value)
                 data.append(value_zero)
+
+        with open("visualization/data/vector_mean_data_3D.json","w") as fd:
+            json.dump(data, fd, indent=2, ensure_ascii=False)
 
     else:
         for feature0, feature1 in zip(component0.keys(), component1.keys()):
@@ -173,26 +177,24 @@ def pca_function(matrix):
             for feature in values:
                 value_zero={"feature":feature,"name":"no", "x":0, "y":0, "x_color":values[feature]["x"]*10  ,"y_color":values[feature]["y"]*10 }
                 value={"feature":feature,"name":"yes", "x":(values[feature]["x"]*10), "y":values[feature]["y"]*10, "x_color":values[feature]["x"]*10  ,"y_color":values[feature]["y"]*10}
-
                 data.append(value)
                 data.append(value_zero)
 
-
-    with open("vector_mean_data.json",'w') as fd:
-        json.dump(data, fd, indent=2, ensure_ascii=False)
-
+        with open("visualization/data/vector_mean_data_2D.json","w") as fd:
+            json.dump(data, fd, indent=2, ensure_ascii=False)
 
     print("explained_variance_ratio_: ")
     print(pca.explained_variance_ratio_)
-
     print("sum: ",sum(pca.explained_variance_ratio_))
-
     print("n_components: ")
     print(pca.n_components_)
+
     x_pca=np.concatenate((x_pca,medias_id.T[:,None]), axis=1)
 
     return (x_pca,pca)
 
+
+    ### transform stories
 def pca_transform_function(matrix_stories, pca):
     stories_id=matrix_stories[:,0]
     medias_id=matrix_stories[:,1]
@@ -220,22 +222,26 @@ def produce_data_media(x_pca):
             media=find_source(int(x_pca[i,3]))
             for key in media.keys():
                 value[key]=media[key]
-            value['x']=x_pca[i, 0]
-            value['y']=x_pca[i, 1]
-            value['z']=x_pca[i,2]
+            value["x"]=x_pca[i, 0]
+            value["y"]=x_pca[i, 1]
+            value["z"]=x_pca[i,2]
             values.append(value)
+
+        with open("visualization/data/reg_dim_mean_features_media_data_3D.json","w") as fd:
+            json.dump(values, fd, indent=2, ensure_ascii=False)
+
     else:
         for i in range(x_pca.shape[0]):
             value={}
             media=find_source(int(x_pca[i,2]))
             for key in media.keys():
                 value[key]=media[key]
-            value['x']=x_pca[i, 0]
-            value['y']=x_pca[i, 1]
+            value["x"]=x_pca[i, 0]
+            value["y"]=x_pca[i, 1]
             values.append(value)
 
-    with open('reg_dim_mean_features_media_data.json','w') as fd:
-        json.dump(values, fd, indent=2, ensure_ascii=False)
+        with open("visualization/data/reg_dim_mean_features_media_data_2D.json","w") as fd:
+            json.dump(values, fd, indent=2, ensure_ascii=False)
 
     return values
 
@@ -250,22 +256,25 @@ def produce_data_stories(x_pca):
             for key in media.keys():
                 if key != "url":
                     value[key]=media[key]
-            value['x']=x_pca[i, 0]
-            value['y']=x_pca[i, 1]
-            value['z']=x_pca[i, 2]
+            value["x"]=x_pca[i, 0]
+            value["y"]=x_pca[i, 1]
+            value["z"]=x_pca[i, 2]
             values.append(value)
+
+        with open("visualization/data/reg_dim_mean_features_stories_transform_3D.json","w") as fd:
+            json.dump(values, fd, indent=2, ensure_ascii=False)
     else:
         for i in range(x_pca.shape[0]):
             value={"story_id":x_pca[i, 2], "url":x_pca[i, 4]}
             media=find_source(int(x_pca[i, 3]))
             for key in media.keys():
                 value[key]=media[key]
-            value['x']=x_pca[i, 0]
-            value['y']=x_pca[i, 1]
+            value["x"]=x_pca[i, 0]
+            value["y"]=x_pca[i, 1]
             values.append(value)
 
-    with open('reg_dim_mean_features_stories_transform.json','w') as fd:
-        json.dump(values, fd, indent=2, ensure_ascii=False)
+        with open("visualization/data/reg_dim_mean_features_stories_transform_2D.json","w") as fd:
+            json.dump(values, fd, indent=2, ensure_ascii=False)
 
     return values
 
