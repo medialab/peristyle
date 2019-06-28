@@ -804,6 +804,7 @@ def calcul_features(path):
 
 
 
+#####                   PROCESS THE OUTPUT PART                     #####
 
 # --------------------------------------
 # Functions for the MULTIPROCESSING and WRITE the results into a new file
