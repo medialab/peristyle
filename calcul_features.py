@@ -740,9 +740,6 @@ def calcul_ARI(txt):
         #### ARI formula ####
         ARI=4.71*(mean_cw)+0.5*(mean_ws)-21.43
 
-        # If the ARI has an absurd result that means the text isn't correctly written
-        if ARI<0 or 30<ARI:
-            ARI=0
 
     # Result contains all the new features values and that's what is returned by the function.
     result={}
@@ -897,7 +894,7 @@ def add_other_stories():
         result["story"] = story[:-4]
 
         # A story is considered only of the ARI result isn't absurd (between 0 and 30), if the story has enought words ads sentences (more then 250 sentences and more then 3 sentences), but not too many words (less then 1500 words).
-        if result["ARI"] <30 and 0<result["ARI"] and result["nb_word"] != 0 and result["nb_sent"] <= 3 and result["nb_word"]>250 and 1500>result["nb_word"]:
+        if result["ARI"] < 30 and 0 < result["ARI"] and result["nb_word"] != 0 and result["nb_sent"] <= 3 and result["nb_word"] > 250 and 1500 > result["nb_word"]:
             writer.writerow(result)
 
     fd.close()
