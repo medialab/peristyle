@@ -8,33 +8,33 @@ import { type, cpus } from 'os';
 
 
 
-let baricenter_promise_3D = fetch('/barycenter_coordinates_3D.json')
+let baricenter_promise_3D = fetch('data/barycenter_coordinates_3D.json')
   .then(function(response) {
     return response.json();
   })
 
-let media_promise_3D = fetch('/reg_dim_mean_features_media_data_3D.json')
+let media_promise_3D = fetch('data/reg_dim_mean_features_media_data_3D.json')
   .then(function(response) {
     return response.json();
   })
 
-let stories_promise_3D = fetch('/reg_dim_mean_features_stories_transform_3D.json')
+let stories_promise_3D = fetch('data/reg_dim_mean_features_stories_transform_3D.json')
   .then(function(response) {
     return response.json();
   })
 
 
-let baricenter_promise_2D = fetch('/barycenter_coordinates_2D.json')
+let baricenter_promise_2D = fetch('data/barycenter_coordinates_2D.json')
   .then(function(response) {
     return response.json();
   })
 
-let media_promise_2D = fetch('/reg_dim_mean_features_media_data_2D.json')
+let media_promise_2D = fetch('data/reg_dim_mean_features_media_data_2D.json')
   .then(function(response) {
     return response.json();
   })
 
-let stories_promise_2D = fetch('/reg_dim_mean_features_stories_transform_2D.json')
+let stories_promise_2D = fetch('data/reg_dim_mean_features_stories_transform_2D.json')
   .then(function(response) {
    return response.json();
   })
@@ -171,7 +171,6 @@ function get_media_name(media_id) {
     }
   }
   return false;
-COUCOU
 }
 
 function update_info(node, clicked_node_type) {

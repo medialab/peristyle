@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "kotatsu serve --index ./index.html --public ./data main.js",
+    "dev": "kotatsu serve --index ./index.html --public . main.js",
     "build": "kotatsu build client main.js --production",
     "deploy": "npm run build && touch .nojekyll && node deploy.js && rm .nojekyll"
   },
