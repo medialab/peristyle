@@ -1,0 +1,18 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "kotatsu serve --index ./index.html --public ./data main.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "graphology": "^0.14.1",
+    "jquery": "^3.4.1",
+    "kotatsu": "^0.17.0",
+    "pycollections": "^0.9.0",
+    "sigma": "2.0.0-alpha20"
+  }
+}
