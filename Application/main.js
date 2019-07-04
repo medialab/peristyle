@@ -163,6 +163,17 @@ function get_media_quarter(media_wanted_id, z) {
   else { return "negatif";}
 }
 
+function get_media_name(media_id) {
+  for (let i = 0; i < media_data.length; i++) {
+    var media = media_data[i];
+    if (media['id'] == media_id) {
+      return media['name'];
+    }
+  }
+  return false;
+
+}
+
 function update_info(node, clicked_node_type) {
 
   let info = "";
@@ -175,8 +186,10 @@ function update_info(node, clicked_node_type) {
         break;
       }
     }
+    let media_name = get_media_name(story['media_id'])
+
     info = `<p><h3 id="titre">Story n°${story['story_id']}</h3></p>
-            <p>media_id: ${story['media_id']}</p>
+            <p>${media_name} id: ${story['media_id']}</p>
             <p><a href=${story['url']} target=blank>Lien vers l'article.</a></p>`
     $("#info").html(info);
   }
