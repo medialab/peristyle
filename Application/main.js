@@ -171,7 +171,7 @@ function get_media_name(media_id) {
     }
   }
   return false;
-
+COUCOU
 }
 
 function update_info(node, clicked_node_type) {
