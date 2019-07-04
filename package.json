@@ -11,7 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "ghpages": "0.0.10",
+    "gh-pages": "^2.0.1",
     "graphology": "^0.14.1",
     "jquery": "^3.4.1",
     "kotatsu": "^0.17.0",
