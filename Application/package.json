@@ -4,11 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "kotatsu serve --index ./index.html --public ./data main.js"
+    "dev": "kotatsu serve --index ./index.html --public ./data main.js",
+    "build": "kotatsu build client main.js --production",
+    "deploy": "npm run build && touch .nojekyll && node deploy.js && rm .nojekyll"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "gh-pages": "^2.0.1",
     "graphology": "^0.14.1",
     "jquery": "^3.4.1",
     "kotatsu": "^0.17.0",

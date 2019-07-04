@@ -8,7 +8,7 @@ import { type, cpus } from 'os';
 
 
 
-let baricenter_promise_3D = fetch('/baricenter_coordinates_3D.json')
+let baricenter_promise_3D = fetch('/barycenter_coordinates_3D.json')
   .then(function(response) {
     return response.json();
   })
@@ -24,7 +24,7 @@ let stories_promise_3D = fetch('/reg_dim_mean_features_stories_transform_3D.json
   })
 
 
-let baricenter_promise_2D = fetch('/baricenter_coordinates_2D.json')
+let baricenter_promise_2D = fetch('/barycenter_coordinates_2D.json')
   .then(function(response) {
     return response.json();
   })
