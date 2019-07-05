@@ -188,7 +188,7 @@ function update_info(node, clicked_node_type) {
     let media_name = get_media_name(story['media_id'])
 
     info = `<p><h3 id="titre">Story n°${story['story_id']}</h3></p>
-            <p>${media_name} id: ${story['media_id']}</p>
+            <p>${media_name} (id: ${story['media_id']})</p>
             <p><a href=${story['url']} target=blank>Lien vers l'article.</a></p>`
     $("#info").html(info);
   }
@@ -203,7 +203,7 @@ function update_info(node, clicked_node_type) {
       }
     }
     info = `<p><h3 id="titre">Media: ${media['name']}</h3></p>
-            <p>media_id: ${media['id']}</p>`
+            <p>id: ${media['id']}</p>`
     $("#info").html(info);
 
   }
@@ -375,6 +375,7 @@ function create_renderer(graph, sources, colors) {
         media_wanted_id = node;
       }
     }
+
     console.log(colors);
     graph.nodes().forEach(function(n){
       let type_n = get_node_type(n);
@@ -397,7 +398,7 @@ function create_renderer(graph, sources, colors) {
           graph.setNodeAttribute(n, 'size', 5);
         }
       }
-      else {
+      else if (type_n == "media") {
         if (n == media_wanted_id) {
           graph.setNodeAttribute(n, 'color', highlight_color);
           graph.setNodeAttribute(n, 'size', 6);

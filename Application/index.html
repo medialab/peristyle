@@ -1,9 +1,9 @@
 <html>
   <head>
-    <title>SigmaJS example</title>
+    <title>Peristyle</title>
     <style>
       html { height:100%;}
-      body {height: 100%;}
+      body {height: 100%; height: 95vh; width: 95vw}
       #container {width: 70%; float:left; height:100%; background-color: #E1E1E1; }
       #parameters { width: 28%; float:right; height:70; }
       #info { border-style: dotted; box-sizing: border-box;}
@@ -11,6 +11,10 @@
       @keyframes spin { 0% { transform: rotate(0deg); }
                       100% { transform: rotate(360deg); }
                       }
+      #nb_dimension { position: relative; left: 20px;}
+
+
+
     </style>
   </head>
   <body>
@@ -20,7 +24,7 @@
     </div>
 
     <div id='nb_dimension'>
-    <h3>Choisir le nombre de dimensions</h3>
+    <h3><br>    Choisir le nombre de dimensions</h3>
         <input type="radio" id="2Dim" name="nb_dimension" value="2"> <label for="two">2 dimensions</label>
         <input type="radio" id="3Dim" name="nb_dimension" value="3" checked> <label for="tree">3 dimensions</label>
         <br>
