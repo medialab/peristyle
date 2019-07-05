@@ -552,6 +552,7 @@ let colors = null;
 let nb_dimension = 3;
 
 
+document.getElementById("reset_2D").hidden = true;
 
 Promise.all([baricenter_promise_3D, media_promise_3D, stories_promise_3D, baricenter_promise_2D, media_promise_2D, stories_promise_2D])
 .then( function(values) {
@@ -566,7 +567,6 @@ Promise.all([baricenter_promise_3D, media_promise_3D, stories_promise_3D, barice
   baricenter_data = baricenter_data_3D;
   stories_data = stories_data_3D;
   media_data = media_data_3D;
-  document.getElementById("reset_2D").hidden = true;
   document.getElementById("loader").hidden = true;
 
   renderer = update_graph_3D('y', 'x', 'z', 'positif');
