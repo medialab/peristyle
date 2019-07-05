@@ -71,49 +71,70 @@ C'est pour calculer cette formule que le tokenizer de phrase est nécessaire.
 On appelle *tokens* les entités morpho-syntaxique en lesquels le texte est découpés.  
 ## Features calculées
 ### Features verbales
-Le pos-tagging de Spacy donne des informations très poussées pour ce qui concerne les verbes, avec notamment le temps, le mode et la personne. Ces informations sont contenues dans une chaîne de charactère d'un attribut tag_ des tokens, qu'il faut par la suite trier pour extraire les informations.
+Le pos-tagging de Spacy donne des informations très poussées pour ce qui concerne les verbes, avec notamment le temps, le mode et la personne. Ces informations sont contenues dans une chaîne de charactère d'un attribut *tag_* des tokens, qu'il faut par la suite trier pour extraire les informations. (Tous les verbes sont taggé *"VERB"*.)
 #### *verb_prop*
-Cette feature comptabilise le nombre de verbes total divisé par le nombre de total de tokens. 
+Cette feature comptabilise le nombre de **verbes total** divisé par le nombre de total de tokens. 
 #### *past_verb_prop*
-Cette feature comptabilise le nombre de verbes au passé divisé par le nombre de total de verbes.
+Cette feature comptabilise le nombre de **verbes au passé** divisé par le nombre de total de verbes.
 #### *pres_verb_prop*
-Cette feature comptabilise le nombre de verbes au présent divisé par le nombre de total de verbes.
+Cette feature comptabilise le nombre de **verbes au présent** divisé par le nombre de total de verbes.
 #### *futur_verb_prop*
-Cette feature comptabilise le nombre de verbes au futur divisé par le nombre de total de verbes.
+Cette feature comptabilise le nombre de **verbes au futur** divisé par le nombre de total de verbes.
 #### *imp_verb_prop*
-Cette feature comptabilise le nombre de verbes à l'imparfait divisé par le nombre de total de verbes.
+Cette feature comptabilise le nombre de **verbes à l'imparfait** divisé par le nombre de total de verbes.
 #### *plur_verb_prop*
-Cette feature comptabilise le nombre de verbes conjugué au pluriel divisé par le nombre de total de verbes.
+Cette feature comptabilise le nombre de **verbes conjugué au pluriel** divisé par le nombre de total de verbes.
 #### *sing_verb_prop*
-Cette feature comptabilise le nombre de verbes conjugué au singulier divisé par le nombre de total de verbes.
+Cette feature comptabilise le nombre de **verbes conjugué au singulier** divisé par le nombre de total de verbes.
 #### *conditional_prop*
-Cette feature comptabilise le nombre de verbes au conditionnel divisé par le nombre de total de verbes.
+Cette feature comptabilise le nombre de **verbes au conditionnel** divisé par le nombre de total de verbes.
 ### Features de ponctuation
+Le nom de l'un des tag de Spacy est *"PUNCT"* pour ponctuation. Le texte de tous les tokens étiquetés ainsi sont stockés dans une variable, puis chaque forme de ponctuation est reconnue grâce à une regex, enfin ces variables sont normalisées par le nombre de phrases dans le texte.  
 #### *question_prop*
+Cette feature comptabilise le nombre de **points d'interrogation** divisé par le nombre total de phrases.
 #### *exclamative_prop*
+Cette feature comptabilise le nombre de points d'**exclamation divisé** par le nombre total de phrases.
 #### *quote_prop*
+Cette feature comptabilise le nombre de **guillemets** divisé par 2 avant d'être normalisé par le nombre total de phrases. 
 #### *bracket_prop*
+Cette feature comptabilise le nombre de **parenthèses** divisé par 2 avant d'être normalisé par le nombre total de phrases.
 #### *comma_prop*
+Cette feature comptabilise le nombre de **virgules** divisé par le nombre total de phrases.
 
 ### Features grammaticales
 #### *numbers_prop*
+Cette feature comptabilise le nombre de nombres (tag *"NUM"*) divisé par le nombre total de tokens. 
 #### *adv_prop*
+Cette feature comptabilise le nombre d'**adverbes** divisé par le nombre total de tokens.
 #### *adj_prop*
+Cette feature comptabilise le nombre d'**adjectifs** divisé par le nombre total de tokens.
 #### *noun_prop*
+Cette feature comptabilise le nombre de **noms** divisé par le nombre total de tokens.
 #### *cconj_prop*
+Cette feature comptabilise le nombre de **conjonctions de coordinations** divisé par le nombre total de tokens.
 #### *sconj_prop*
+Cette feature comptabilise le nombre de **conjonctions de subordination** divisé par le nombre total de tokens.
 
 ### Features d'entitées nommées
+Les Spacy identifie également les entités nommées (ou ner). Celles-ci sont identiées par le modèle de tokenization puis elles sont accessibles au travers de l'attribut ents du texte tokenizé. Chaque entité identifiée possède un attribut de label indiquant le type de l'entité. [Lien vers la documentation des entités nommées de Spacy.](https://spacy.io/api/annotation/)
 #### *ner_prop*
+Cette feature comptabilise le nombre total d'**entités nommées** divisé par le nombre total de tokens.
 #### *person_prop*
+Cette feature comptabilise le nombre d'entités nommées **personnes** identifiées divisé par le nombre total de tokens. (label: *"PERSON"*)
 #### *norp_prop*
+Cette feature comptabilise le nombre d'entités nommées **conjonctions de subordination** divisé par le nombre total de tokens. (label: *"NORP"*)
 #### *fac_prop*
+Cette feature comptabilise le nombre d'entités nommées **de construction** (monuments, aéroports, autoroutes, ponts etc.) divisé par le nombre total de tokens. (label: *"FAC"*)
 #### *org_prop*
+Cette feature comptabilise le nombre d'entités nommées **organisation** (ONG, entreprises, agences, institutions etc.) divisé par le nombre total de tokens. (label: *"ORG"*)
 #### *gpe_prop*
+Cette feature comptabilise le nombre d'entités nommées **éléments géopolitiques** (pays, villes, états etc.) divisé par le nombre total de tokens. (label: *"GPE"*)
 #### *loc_prop*
+Cette feature comptabilise le nombre d'entités nommées **éléments de localisation naturels** (chaînes de montagnes, étendues d'eau etc.) divisé par le nombre total de tokens. (label: *"LOC"*)
 #### *product_prop*
+Cette feature comptabilise le nombre d'entités nommées **produits** (objets, véhicules, aliments etc.) divisé par le nombre total de tokens. (label: *"PRODUCT"*)
 #### *event_prop*
-
+Cette feature comptabilise le nombre d'entités nommées **événements** (noms d'ouragan, batailles, guerres, événements sportifs etc.) divisé par le nombre total de tokens. (label: *"EVENT"*)
 
 # Features calculées grâce à d'autres ressources NLP
 ## Le repo NLP
