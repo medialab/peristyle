@@ -22,62 +22,28 @@ from sklearn.preprocessing import scale
 from matplotlib import colors as mcolors
 from multiprocessing import Pool
 
-HTML=re.compile(r'<[^>]*>')
-VIDE=re.compile(r'[\s\n\t\r]+')
-USELESS=re.compile(r'[\'’`\- ]+')
-
-def print_statistics(results):
-
-    if type(results)==dict or type(results)==defaultdict:
-
-        #print(results)
-        print("mean: ",mean(results.values()))
-        print("median: ",median(results.values()))
-        maximum=max(results.values())
-        minimum=min(results.values())
-        print("max: ", maximum)
-        print(" -media", [key for key in results.keys() if results[key]==maximum])
-        print("min: ",minimum)
-        print(" -media", [key for key in results.keys() if results[key]==minimum])
-        values=[value for value in results.values()]
-        print('q1 ',np.percentile(values,10))
-        print('q2 ',np.percentile(values,75))
-        print("")
-        print("")
-    else:
-        print("")
-        print(type(results))
-        print("")
-
-    return 0
+HTML=re.compile(r"<[^>]*>")
+VIDE=re.compile(r"[\s\n\t\r]+")
+USELESS=re.compile(r"[\"’`\- ]+")
 
 
-def squeeze(txt): #pour être sur que le sent tokenizer de nltk marche bien
-    txt=re.sub(r'[.]+', '.', txt)
-    txt=re.sub(USELESS, ' ', txt)
-    return txt
-
-def clean(txt):
-    txt=re.sub(HTML, ' ', txt)
-    txt=re.sub(VIDE, ' ', txt)
-    return txt
 
 def generate_sources():
 
-    f2=open('sources.csv', 'r')
+    f2=open("tables/sources.csv", "r")
     sources=csv.DictReader(f2)
 
     sources_list=[]
 
     for row in sources:
-        source={'url': row['url'],
-                'name':row['name'],
-                'id':row['id'],
-                'politics':row['politics'],
-                'level0':row['level0_title'],
-                'level1':row['level1_title'],
-                'level2':row['level2_title'],
-                'webentity':row['webentity']}
+        source={"url": row["url"],
+                "name":row["name"],
+                "id":row["id"],
+                "politics":row["politics"],
+                "level0":row["level0_title"],
+                "level1":row["level1_title"],
+                "level2":row["level2_title"],
+                "webentity":row["webentity"]}
         sources_list.append(source)
 
     f2.close()
@@ -86,17 +52,17 @@ def generate_sources():
 
 def find_source(media_id):
     for source in SOURCES:
-        if int(source['id'])==int(media_id):
+        if int(source["id"])==int(media_id):
             return source
     print(media_id, int(media_id))
     return False
 
 def produce_url():
     url={}
-    f_sample=open('sample_filtered_with_features.csv', 'r')
+    f_sample=open("tables/sample_filtered_with_features.csv", "r")
     samples=csv.DictReader(f_sample)
     for row in samples:
-        url[int(row['stories_id'])]=row['url']
+        url[int(row["stories_id"])]=row["url"]
     f_sample.close()
     return url
 
@@ -104,15 +70,16 @@ def produce_url():
 URLS=produce_url()
 SOURCES=generate_sources()
 
-#FEATURES_NAMES=['ARI', 'shortwords_prop' , 'longwords_prop' , 'dictwords_prop', 'sttr', 'negation_prop1', 'subjectivity_prop1', 'verb_prop','noun_prop','cconj_prop','adj_prop','adv_prop', "sttr"]
-#FEATURES_NAMES=['ARI', 'nb_sent', 'nb_word', 'nb_char', 'mean_cw', 'mean_ws', 'shortwords_prop' , 'longwords_prop' , 'dictwords_prop', 'sttr', 'negation_prop1', 'subjectivity_prop1', 'verb_prop', 'question_prop','exclamative_prop','quote_prop','bracket_prop','noun_prop','cconj_prop','adj_prop','adv_prop']
-FEATURES_NAMES=['ARI', 'nb_sent', 'nb_word', 'nb_char', 'mean_cw', 'mean_ws', 'shortwords_prop' , 'longwords_prop' , 'dictwords_prop', 'negation_prop2', 'subjectivity_prop2', 'verb_prop', 'past_verb_prop', 'pres_verb_prop', 'fut_verb_prop', 'conditional_prop','question_prop','exclamative_prop','quote_prop','bracket_prop','noun_prop','cconj_prop', 'sconj_prop', 'pronp_prop', 'adj_prop','adv_prop', 'sttr', 'comma_prop', 'numbers_prop', 'level0_prop', 'level2_prop', 'autre_prop']
+#FEATURES_NAMES=["ARI", "shortwords_prop" , "longwords_prop" , "dictwords_prop", "sttr", "negation_prop1", "subjectivity_prop1", "verb_prop","noun_prop","cconj_prop","adj_prop","adv_prop", "sttr"]
+#FEATURES_NAMES=["ARI", "nb_sent", "nb_word", "nb_char", "mean_cw", "mean_ws", "shortwords_prop" , "longwords_prop" , "dictwords_prop", "sttr", "negation_prop1", "subjectivity_prop1", "verb_prop", "question_prop","exclamative_prop","quote_prop","bracket_prop","noun_prop","cconj_prop","adj_prop","adv_prop"]
+#FEATURES_NAMES=["ARI", "nb_sent", "nb_word", "nb_char", "mean_cw", "mean_ws", "shortwords_prop" , "longwords_prop" , "dictwords_prop", "negation_prop2", "subjectivity_prop2", "verb_prop", "past_verb_prop", "pres_verb_prop", "fut_verb_prop", "conditional_prop","question_prop","exclamative_prop","quote_prop","bracket_prop","noun_prop","cconj_prop", "sconj_prop", "pronp_prop", "adj_prop","adv_prop", "sttr", "comma_prop", "numbers_prop", "level0_prop", "level2_prop", "autre_prop"]
+FEATURES_NAMES=["ARI", "nb_sent", "nb_word", "nb_char", "mean_cw", "mean_ws", "shortwords_prop" , "longwords_prop", "dictwords_prop", "proper_noun_prop", "negation_prop1", "negation_prop2", "subjectivity_prop1", "subjectivity_prop2", "verb_prop", "past_verb_cardinality", "pres_verb_cardinality", "fut_verb_cardinality", "imp_verb_cardinality", "other_verb_cardinality","past_verb_prop", "pres_verb_prop", "fut_verb_prop","imp_verb_prop", "plur_verb_prop","sing_verb_prop","verbs_diversity", "conditional_prop","question_prop","exclamative_prop","quote_prop","bracket_prop","noun_prop","cconj_prop", "sconj_prop", "pronp_prop", "adj_prop","adv_prop", "sttr", "comma_prop", "numbers_prop", "level0_prop", "level1_prop", "level2_prop", "autre_prop", "ner_prop", "person_prop", "norp_prop", "fac_prop", "org_prop", "gpe_prop", "loc_prop", "product_prop", "event_prop" ]
 
 nb_component= 3
 
 
 def create_matrix(media_wanted_id=0):
-    f=open('sample_filtered_with_features.csv', 'r')
+    f=open("tables/sample_filtered_with_features.csv", "r")
     samples=csv.DictReader(f)
     matrix=[]
     for row in samples:
@@ -155,8 +122,8 @@ def pca_function(matrix, media_wanted_id=0):
         print("mean ",mean(component.values()))
         print("median ",median(component.values()))
         print("stdev ",stdev(component.values()))
-        print('q1 ',np.percentile(component1,25))
-        print('q2 ',np.percentile(component1,75))
+        print("q1 ",np.percentile(component1,25))
+        print("q2 ",np.percentile(component1,75))
         maximum=max(component.values())
         minimum=min(component.values())
         print("max ", [(key, component[key]) for key in component.keys() if component[key]==maximum])
@@ -192,7 +159,7 @@ def pca_function(matrix, media_wanted_id=0):
             data.append(value)
             data.append(value_zero)
 
-            with open('vector_data.json','w') as fd:
+            with open("visualization/data/vector_data.json","w") as fd:
                 json.dump(data, fd, indent=2, ensure_ascii=False)
 
     elif nb_component==2:
@@ -212,7 +179,7 @@ def pca_function(matrix, media_wanted_id=0):
             data.append(value)
             data.append(value_zero)
 
-            with open('vector_data.json','w') as fd:
+            with open("visualization/data/vector_data.json","w") as fd:
                 json.dump(data, fd, indent=2, ensure_ascii=False)
 
 
@@ -248,12 +215,12 @@ def produce_data(x_pca, option="none"):
                 media=find_source(x_pca[i,3])
                 for key in media.keys():
                     value[key]=media[key]
-                value['url']=URLS[int(x_pca[i,4])]
-                value['story_id']=x_pca[i, 4]
-                value['media_id']=x_pca[i, 3]
-                value['x']=x_pca[i, 0]
-                value['y']=x_pca[i, 1]
-                value['z']=x_pca[i, 2]
+                value["url"]=URLS[int(x_pca[i,4])]
+                value["story_id"]=x_pca[i, 4]
+                value["media_id"]=x_pca[i, 3]
+                value["x"]=x_pca[i, 0]
+                value["y"]=x_pca[i, 1]
+                value["z"]=x_pca[i, 2]
 
                 values.append(value)
 
@@ -262,11 +229,11 @@ def produce_data(x_pca, option="none"):
                 media=find_source(x_pca[i,2])
                 for key in media.keys():
                     value[key]=media[key]
-                value['url']=URLS[int(x_pca[i,3])]
-                value['story_id']=x_pca[i, 3]
-                value['media_id']=x_pca[i, 2]
-                value['x']=x_pca[i, 0]
-                value['y']=x_pca[i, 1]
+                value["url"]=URLS[int(x_pca[i,3])]
+                value["story_id"]=x_pca[i, 3]
+                value["media_id"]=x_pca[i, 2]
+                value["x"]=x_pca[i, 0]
+                value["y"]=x_pca[i, 1]
 
 
                 values.append(value)
@@ -278,11 +245,11 @@ def produce_data(x_pca, option="none"):
             media=find_source(x_pca[i,2])
             for key in media.keys():
                 value[key]=media[key]
-            value['url']=URLS[int(x_pca[i,3])]
-            value['story_id']=x_pca[i, 3]
-            value['media_id']=x_pca[i, 2]
-            value['x']=x_pca[i, 0]
-            value['y']=x_pca[i, 1]
+            value["url"]=URLS[int(x_pca[i,3])]
+            value["story_id"]=x_pca[i, 3]
+            value["media_id"]=x_pca[i, 2]
+            value["x"]=x_pca[i, 0]
+            value["y"]=x_pca[i, 1]
 
             values.append(value)
     return values
@@ -315,66 +282,6 @@ def produce_mean_data(x_pca):
     return values
 
 
-def study_features(media_wanted_id=0):
-    with open('sample_with_features.csv', 'r') as f:
-        samples=csv.DictReader(f)
-        features=defaultdict(dict)
-        for row in samples:
-            if row["filter"]=="False" and int(row["nb_word"])>250:
-                if media_wanted_id==0 or int(row["media_id"])==media_wanted_id:
-                    for feature in FEATURES_NAMES:
-                        features[feature][row["stories_id"]]=float(row[feature])
-        for feature in features.keys():
-            print("     ", feature)
-            print_statistics(features[feature])
-    return 0
-
-
-def print_media(media_wanted_id=0):
-    f_sample=open('sample_filtered_with_features.csv', 'r')
-    samples=csv.DictReader(f_sample)
-    i=0
-    strange=0
-    features_values=defaultdict(list)
-
-    for row in samples:
-        if row["stories_id"] and row["filter"]=="False" and int(row["nb_word"])>250:
-            if int(row['media_id'])==media_wanted_id or media_wanted_id==0:
-                i+=1
-                print("HElllo")
-                try:
-                    with open("sample/"+row['stories_id']+'.txt', 'r') as f:
-                        text=f.readline()
-                        #if len(text)>1000:
-                        text=clean(text)
-                        text=squeeze(text)
-                        strange+=1
-                        print('text ',text)
-                        print('len ', len(text))
-                        print('title ',row['title'])
-                        print('url ', row['url'])
-                        print('')
-                        print('')
-                except:
-                    print('il y a eu une couille dans le potage')
-                    print('')
-                    print('')
-                if i==100000:
-                    break
-
-    print('strange ',strange)
-    print('total ',i)
-    study_features(media_wanted_id)
-    return 0
-
-#print("171 LCP")
-#print_media(171)
-
-#print("327 La Voix du Nord")
-#print_media(327)
-
-#print("YOOOYOYOYO 2016")
-#print_media(2016)
 
 def pca_all_stories():
     matrix=create_matrix()
@@ -383,7 +290,7 @@ def pca_all_stories():
     x_pca=pca_function(matrix)
     values=produce_data(x_pca)
     data={"values":values}
-    with open('reg_dim_data.json','w') as fd:
+    with open("visualization/data/reg_dim_data.json","w") as fd:
         json.dump(data, fd, indent=2, ensure_ascii=False)
 
 
@@ -391,7 +298,7 @@ def pca_all_stories():
     values=produce_mean_data(x_pca)
     data={"values":values}
 
-    with open('reg_dim_mean_data.json','w') as fd:
+    with open("visualization/data/reg_dim_mean_data.json","w") as fd:
         json.dump(data, fd, indent=2, ensure_ascii=False)
     """
 
@@ -402,7 +309,7 @@ def pca_all_stories():
 
 def pca_media_stories(media_wanted_id=0):
 
-    with open("media_with_mean_features.csv", "r") as f:
+    with open("tables/media_with_mean_features.csv", "r") as f:
          sample=csv.DictReader(f)
          medias=[int(row["id"]) for row in sample]
 
@@ -423,7 +330,7 @@ def pca_media_stories(media_wanted_id=0):
                 values=produce_data(x_pca, "all")
                 data["values"]+=values
 
-    with open('reg_dim_per_media_data.json','w') as fd:
+    with open("visualization/data/reg_dim_per_media_data.json","w") as fd:
         json.dump(data, fd, indent=2, ensure_ascii=False)
 
     x_mean=[]

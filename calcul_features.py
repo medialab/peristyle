@@ -41,7 +41,7 @@ csv.field_size_limit(100000000)
 # Features Calculation Script (1)
 # =============================================================================
 # This script is the first one to run, it calculates all the different features in the stories in the sample file.
-# For each article, the scrip returns an array with the numerical result for each features, then those data are used to train an A.I algorithm.
+# For each article, the scrip returns an array with the numerical result for each feature, then those data are used to train an A.I algorithm.
 # Below are the features calculated by this script and they are further explained in the documentation:
 #       ["ARI", "nb_sent", "nb_word", "nb_char", "mean_cw", "mean_ws", "median_cw", "median_ws", "shortwords_prop" , "longwords_prop" ,"max_len_word", "dictwords_prop", "proper_noun_prop", "negation_prop1", "negation_prop2", "subjectivity_prop1", "subjectivity_prop2", "interpellation_prop1", "interpellation_prop2", "nous_prop1", "nous_prop2", "verb_prop", "past_verb_cardinality", "pres_verb_cardinality", "fut_verb_cardinality", "imp_verb_cardinality", "other_verb_cardinality","past_verb_prop", "pres_verb_prop", "fut_verb_prop","imp_verb_prop", "plur_verb_prop","sing_verb_prop","verbs_diversity", "conditional_prop","question_prop","exclamative_prop","quote_prop","bracket_prop","noun_prop","cconj_prop", "sconj_prop", "pronp_prop", "adj_prop","adv_prop", "a", "e", "i", "l", "n", "o", "sttr", "comma_prop", "numbers_prop", "level0_prop", "level1_prop", "level2_prop", "autre_prop", "ner_prop", "person_prop", "norp_prop", "fac_prop", "org_prop", "gpe_prop", "loc_prop", "product_prop", "event_prop" ]
 # In fact, there are a lot of different types of features so to calculate them different tools are used. Mainly it uses Spacy, NLTK and regular expressions.
@@ -149,11 +149,10 @@ def get_language_level(language_level, word1, word2):
 
         if word1 in LANGUAGE_LEVEL[level] or word2 in LANGUAGE_LEVEL[level]:
             language_level[level] += 1
-            return language_level
-
         else:
             language_level["level1"] += 1
-            return language_level
+
+        return language_level
 
 # Declaring the dictionaries as global variable to make them accesible throughout the text.
 STOPWORDS = generate_stopwords()
@@ -256,7 +255,7 @@ def count_negation(txt, nb_word, nb_sent):
 # At the end of this section, there is the pos_tagging() function wich is the main function using spacy.
 # It calculates all the following features : ["nb_word", "dictwords_prop", "proper_noun_prop", "pronp_prop", "numbers_prop", "level0_prop", "level1_prop", "level2_prop", "autre_prop"]
 # But also some features more precise such as the different type of punctuation, verbs, pos, ner and the vocabulary diversity (sttr).
-# To do this it goes through all the tokens of the text and counts how many words are corresponding to each features.
+# To do this it goes through all the tokens of the text and counts how many words are corresponding to each feature.
 # Moreover, for the more complicate features, it calls other functions:
 #
 #           - calcul_verb(verbs, nb_verbs): the pos_tagging function puts all "VERB" tag in a dict (verbs) and this function permits to have a thinner typology of the verbs in the text.
@@ -477,6 +476,7 @@ def calcul_ner(txt, nb_token):
     # Iteration through the list to recognize the type of each entity.
     for entity in txt.ents:
         label=entity.label_
+
         if label in entities.keys():
             entities[label]+=1
 
@@ -553,7 +553,6 @@ def pos_tagging(txt): #calcule certaines features en utilisant le pos tagging : 
 
         # Update the pos counters with the pos name of the actual token.
         pos_counting[token.pos_] += 1
-
         # Update the language level counters with the language level of the actual token.
         language_level = get_language_level(language_level, token.lemma_, token.text)
 
@@ -770,8 +769,9 @@ def calcul_ARI(txt):
 
 def calcul_features(path):
 
-    row=path[1]
-    results={key:row[key] for key in row.keys()}
+    # Initialization of the row with the story information.
+    row = path[1]
+    results = {key:row[key] for key in row.keys()}
 
 
     # It has to use thise try beacause some stories weren't import correctly from the data base to the sample file, but their ID remained in the fil with all the ids.
@@ -782,10 +782,7 @@ def calcul_features(path):
 
     except:
         print("opening failed")
-        return False
-
-    # Result contains all the new features values and that's what is returned by the function.
-    results={}
+        return {}
 
     txt=clean_from_html(txt)
 
@@ -841,6 +838,7 @@ def add_info():
         with Pool(4) as pool:
             for features in pool.imap_unordered(calcul_features, generator()):
                 if features != {}:
+                    print(features)
                     writer.writerow(features)
 
     fd.close()
@@ -888,7 +886,6 @@ def add_other_stories():
     writer.writeheader()
 
     for story in os.listdir('./testing_stories/sample'):
-        print(story)
 
         result = calcul_features_id(story)
         result["story"] = story[:-4]
