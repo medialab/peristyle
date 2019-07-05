@@ -21,38 +21,73 @@ Ces features sont calculées de deux manières différentes, c'est pourquoi elle
 normalisation par le nombre de mots et la version 2 par le nombre de phrases. Celle selectionnée pour la PCA est la version 1.
 ## Features calculées
 ### *negation_prop*
-Cette calcule la proportion de **negation explicite** 
+Cette feature calcule la proportion de **negation explicite** grâce à la formule suivante:
+    
+    NEGATION = re.compile(r"\bne\b|\bn'\b|\bnon\b", re.I)
 
 ### *subjectivity_prop*
+Cette feature calcule la proportion de **subjectivité explicite** grâce à la formule suivante:
+
+    SUBJ = re.compile(r"\bje\b|\bma\b|\bme\b|\bmon\b|\bmes\b|\bj'\b|\bm'\b|\bmien\b|\bmienne\b|\bmiens\b|\bmiennes\b", re.I)
+
 ### *interpellation_prop*
+Cette feature calcule la proportion de **interpellation explicite** (incluant tout les tutoiements et vouvoiements) grâce à la formule suivante:
+
+    INTERPEL = re.compile(r"\btu\b|\bt'\b|\bte\b|\btes\b|\bton\b|\bta\b|\btien\b|\btiens\b|\btienne\b|\btiennes\b|\bvous\b|\bvos\b|\bvotre\b|\bvôtre\b|\bvôtres\b", re.I)
+
 ### *nous_prop*
+Cette feature calcule la proportion de **nounoiement explicite** grâce à la formule suivante:
+
+    NOUS = re.compile(r"\bnous\b|\bnos\b|\bnotre\b|\bnrôte\b|\bnôtres\b", re.I)
 
 # Features calculées avec NLTK
+Les prochaines features utilisent la bibliothèque python **[NLTK](http://www.nltk.org/)**. Grâce au tokenizer de phrases et de mots, cet outil permet en particulier de capturer la longueur des articles.
+
 ## Features utilisant la tokenisation de nltk
 ### *nb_sent*
+Cette feature comptabilise le **nombre de phrases** grâce à la fonction sent_tokenize de NLTK. Ne sont considérées comme phrases valides et ne sont comptabilisées que les phrases avec une longueur censée comprise **entre 3 et 300 mots**.
 ### *nb_char*
-### *mean_cw/ws*
-### *median_cw/ws*
+Cette feature comptabilise la somme du **nombre de charactères** des mots de plus de trois charactères.
+### *mean_cw/mean_ws*
+Ces features sont la **moyenne du nombre de charactères par mot** et la **moyenne du nombre de mots par phrase**.  
+### *median_cw/median_ws*
+Ces features sont la **médiane du nombre de charactères par mot** et la **médiane du nombre de mots par phrase**.  
 ### *max_len_word*
+Cette feature est la **longueur du mot le plus long** du texte. 
 ### *shortwords_prop*
+Cette feature est la proportion de **mots courts**. Ne sont considérés comme mots courts que les mots de **moins de 5 charactères** et le résultats est divisé par le nombre de mots total. La limite a été fixée à 5 charactères car c'est la moyenne du nombre de charactères par mot en français.
 ### *longwords_prop*
-    
+Cette feature est la proportion de **mots longs**. Ne sont considérés comme mots longs que les mots de **plus de 5 charactères** et le résultats est divisé par le nombre de mots total. La limite a été fixée à 5 charactères car c'est la moyenne du nombre de charactères par mot en français. 
 ## Métrique de lisibilité *ARI*
 ### Explication
+ARI, ou [**Automated Readability Index**](http://www.readabilityformulas.com/automated-readability-index.php) est une **métrique de lisibilité** comprise entre 0 et 14 (mais entre 0 et 30 pour le projet car adapté au français). LE résultat renvoyé donne une estimation de la complexité du texte et de sa difficulté à être lu. Cette métrique a été choisie car elle ne dépend pas du nombre de syllabes comme la plupart des autres métriques de lisibilité. En effet, contrairement à l'anglais où il sufffit de compter le nombre de voyelles pour estimer le nombre de syllabes, en français les syllabes sont souvent formées de plusieurs voyelles.
+C'est pour calculer cette formule que le tokenizer de phrase est nécessaire.
 ### Formule
+             ARI = 4.71 * (moyenne de charactères par mot) + 0.5 * (moyenne de mots par phrase) - 21.43
 
 # Features calculées avec Spacy
 ## Pos-tagging
+[Spacy](https://spacy.io/) offre un grand nombre d'opérations de nlp. La fonctionnalité d'[étiquetage morpho-syntaxique](https://fr.wikipedia.org/wiki/%C3%89tiquetage_morpho-syntaxique), ou en anglais **pos-tagging** ([Part-Of-Speech tagging](https://en.wikipedia.org/wiki/Part-of-speech_tagging)) est largement utilisée tout au long de ce projet. En utilisant le modèle *fr_core_news_sm*, tous les texts sont étiquetés puis cet étiquetage est triés, comptabilisé, normalisé. [Lien vers la documentation des tags de Spacy](https://github.com/explosion/spaCy/blob/master/spacy/lang/fr/tag_map.py).  
+On appelle *tokens* les entités morpho-syntaxique en lesquels le texte est découpés.  
+## Features calculées
 ### Features verbales
+Le pos-tagging de Spacy donne des informations très poussées pour ce qui concerne les verbes, avec notamment le temps, le mode et la personne. Ces informations sont contenues dans une chaîne de charactère d'un attribut tag_ des tokens, qu'il faut par la suite trier pour extraire les informations.
 #### *verb_prop*
+Cette feature comptabilise le nombre de verbes total divisé par le nombre de total de tokens. 
 #### *past_verb_prop*
+Cette feature comptabilise le nombre de verbes au passé divisé par le nombre de total de verbes.
 #### *pres_verb_prop*
+Cette feature comptabilise le nombre de verbes au présent divisé par le nombre de total de verbes.
 #### *futur_verb_prop*
+Cette feature comptabilise le nombre de verbes au futur divisé par le nombre de total de verbes.
 #### *imp_verb_prop*
+Cette feature comptabilise le nombre de verbes à l'imparfait divisé par le nombre de total de verbes.
 #### *plur_verb_prop*
+Cette feature comptabilise le nombre de verbes conjugué au pluriel divisé par le nombre de total de verbes.
 #### *sing_verb_prop*
+Cette feature comptabilise le nombre de verbes conjugué au singulier divisé par le nombre de total de verbes.
 #### *conditional_prop*
-
+Cette feature comptabilise le nombre de verbes au conditionnel divisé par le nombre de total de verbes.
 ### Features de ponctuation
 #### *question_prop*
 #### *exclamative_prop*
@@ -93,3 +128,9 @@ Cette calcule la proportion de **negation explicite**
 ### *level1_prop*
 ### *level2_prop*
 ### *autre_prop*
+
+# Features biais
+## Explications
+## Méthode de calcul
+## Features biais
+### *e*, *l*, *a*, *o*, *u*, *i*, *n*
