@@ -114,6 +114,8 @@ Cette feature comptabilise le nombre de **noms** divisé par le nombre total de 
 Cette feature comptabilise le nombre de **conjonctions de coordinations** divisé par le nombre total de tokens.
 #### *sconj_prop*
 Cette feature comptabilise le nombre de **conjonctions de subordination** divisé par le nombre total de tokens.
+#### *pronp_prop*
+Cette feature comptabilise le nombre de **pronoms personnels** divisé par le nombre total de tokens.
 
 ### Features d'entitées nommées
 Les Spacy identifie également les entités nommées (ou ner). Celles-ci sont identiées par le modèle de tokenization puis elles sont accessibles au travers de l'attribut ents du texte tokenizé. Chaque entité identifiée possède un attribut de label indiquant le type de l'entité. [Lien vers la documentation des entités nommées de Spacy.](https://spacy.io/api/annotation/)
@@ -138,19 +140,50 @@ Cette feature comptabilise le nombre d'entités nommées **événements** (noms 
 
 # Features calculées grâce à d'autres ressources NLP
 ## Le repo NLP
+Pour calculer d'autres features il a fallu établir de nouvelles ressources qui prennent souvent la forme de dictionnaire. Ces dernières et les scripts pour les générer se trouvent dans le repo [NLP](https://github.com/medialab/nlp) du [médialab](https://github.com/medialab). 
 ## Exceptions noms propres
+Ce fichier texte contient une liste de noms propres français qui sont homonymes avec des mots courants de la langues française. En effet, pour cette feature, on considère comme nom propres les mots capitalisés qui ne sont pas dans le dictionnaire sauf s'ils sont dans cette liste de homonymes.
 ### *propernoun_prop*
+Cette feature comptabilise le nombre de noms propres divisé par le nombre total de mots.
 ## Dictionnaire français
+Ce fichier texte contient la liste de tous les mots du dictionaire français. Cependant, celle-ci est issue du dictionnaire français de linux qui n'est pas exhaustif. Ainsi, il y a plusieurs moyens d'améliorer cette ressource, à partir du wiktionaire par exemple.
 ### *dictwords_prop*
+Cette feature comptabilise le nombre de mots du dictionaire divisé par le nombre total de mots.
 ## Dictionaire de stopwords
+Ce fichier texte contient une liste des [mots vides](https://fr.wikipedia.org/wiki/Mot_vide), ou [stopwords](https://en.wikipedia.org/wiki/Stop_words), français la plus exhaustive possible. 
 ### *stopwords_prop*
+Cette feature comptabilise le nombre de mots de stop words divisé par le nombre total de mots.
 ## wikitinary.csv
+À partir d'un dump du wiktionaire, le niveau de language de chaque mot du dictionnaire a été extrait. En effet, chaque définition du wiktionaire comporte un tag correspondant au niveau de language du mot. 
 ### *level0_prop*
-### *level1_prop*
-### *level2_prop*
-### *autre_prop*
+Cette feature comptabilise le nombre de mots du registre familier divisé par le nombre de mots total. Les mots sont considérés comme "familier" lorsque leur définition du wiktionaire comporte l'un des tags suivants:
+- populaire
+- injurieux
+- très familier
+- vulgaire
+- familier
+- argot
+- verlan
 
+### *level2_prop*
+Cette feature comptabilise le nombre de mots du registre soutenu divisé par le nombre de mots total. Les mots sont considérés comme "soutenu" lorsque leur définition du wiktionaire comporte l'un des tags suivants:
+- littéraire
+- poétique
+- soutenu
+
+### *autre_prop*
+Cette feature comptabilise le nombre de mots de registres particuliers divisé par le nombre de mots total. Les mots sont considérés comme issus de registre "particulier" lorsque leur définition du wiktionaire comporte l'un des tags suivants:
+- plaisanterie
+- ironique
+- péjoratif
+- euphémisme
+- enfantin
+- informel
+
+### *level1_prop*
+Cette feature comptabilise le nombre de mots du registre courant, c'est-à-dire ni familier, ni soutenu, ni de la catégorie "autre", divisé par le nombre de mots total. Les mots sont considérés du registre "courant" lorsque leur définition du wiktionaire ne comporte pas de tag indiquant le niveau de langage.
 # Features biais
+
 ## Explications
 ## Méthode de calcul
 ## Features biais
