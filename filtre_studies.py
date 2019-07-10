@@ -56,7 +56,7 @@ from operator import itemgetter
 # --------------------------------------
 INFOS = ["url", "name", "id", "politics", "level0", "level1", "level2", "webentity"]
 FEATURES_NAMES = ["ARI", "nb_sent", "nb_word", "nb_char", "mean_cw", "mean_ws", "shortwords_prop" , "longwords_prop" , "dictwords_prop", "proper_noun_prop", "negation_prop1", "subjectivity_prop1", "verb_prop","past_verb_prop", "pres_verb_prop", "fut_verb_prop","imp_verb_prop", "plur_verb_prop","sing_verb_prop", "conditional_prop","question_prop","exclamative_prop","quote_prop","bracket_prop","noun_prop","cconj_prop", "sconj_prop", "pronp_prop", "adj_prop","adv_prop", "sttr", "comma_prop", "numbers_prop", "level0_prop", "level1_prop", "level2_prop", "autre_prop", "ner_prop", "person_prop", "norp_prop", "fac_prop", "org_prop", "gpe_prop", "loc_prop", "product_prop", "event_prop", "interpellation_prop1", "nous_prop1"]
-nb_dimension = 2
+nb_dimension = 3
 # --------------------------------------
 
 
@@ -449,7 +449,10 @@ def extract_articles():
 def print_quarter(num_quarter, num_articles = 100):
 
     # File opening.
-    fs = open("tables/stories_with_distance_to_barycenters.csv", "r", encoding = "latin1")
+    if nb_dimension == 3:
+        fs = open("tables/stories_with_distance_to_barycenters_3D.csv", "r", encoding = "latin1")
+    else:
+        fs = open("tables/stories_with_distance_to_barycenters_2D.csv", "r", encoding = "latin1")
     reader = csv.DictReader(fs)
 
     # Declaring the storing variable.
@@ -638,7 +641,7 @@ def barycenters_extraction():
         fd = open("tables/stories_with_distance_to_barycenters_2D.csv", "w")
         fieldnames_dimensions = ["x", "y"]
 
-    fieldnames = fieldnames_dimensions + ["story_id", "url", "name", "webentity", "media_id", "quarter", "distance", "distance_type"]
+    fieldnames = fieldnames_dimensions + ["story_id", "url", "name", "webentity", "media_id", "quarter", "distance", "distance_type", "bloc", "level_1", "level_2", "final_categories"]
     writer = csv.DictWriter(fd, fieldnames = fieldnames)
     writer.writeheader()
 
@@ -673,10 +676,15 @@ def barycenters_extraction():
             value["quarter"] = key
             value["distance"] = distance
             value["distance_type"] = distance_type
+            media_information = find_media_source(value["media_id"])
+            value["level_1"] = media_information["level_1"]
+            value["level_2"] = media_information["level_2"]
+            value["bloc"] = media_information["bloc"]
+            value["final_categories"] = media_information["final_categories"]
 
             # Write the value.
-            values.append(value)
             writer.writerow(value)
+            values.append(value)
 
         print("quarter ", key)
         print("")
