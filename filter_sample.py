@@ -27,9 +27,9 @@ from langdetect import detect
 #                      So to keep only coherently written texts, one of the filter conditions is based on the ARI result.
 #                      But as the metric is in for English, to adapt it the range of tolerated results had been expanded;
 #
-#           - must has word: Seems obvious to do a stylistic analysis;
+#           - must have word: Seems obvious to do a stylistic analysis;
 #
-#           - must has at least 4 sentences: This condition is made to ensure that the work is made on proper press text and not on advertising for instance.
+#           - must have at least 4 sentences: This condition is made to ensure that the work is made on proper press text and not on advertising for instance.
 #                      Usually a press article has at least 4 sentences;
 #
 #           - story's lenght must be in the right range (between 250 and 1500 words): As the stories are really different, they can also have really different length.
