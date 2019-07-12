@@ -75,7 +75,7 @@
  - [7. Features biais](#features-biais)
    - [7.1. Explications](#explications-biais)
    - [7.2. Méthode de calcul](#biais-calcul)
-
+ - [8. Les différents critères de filtrage des stories](#filtre)
 ## 1. Introduction <a name="introduction"></a>
 Voici la documentation de toutes les features calculées pour le projet [Péristyle](https://github.com/medialab/peristyle). Dans ce cadre, celles-ci doivent se rapporter au style rédactionnel et non au sujet des écrits traités, elles sont donc essentiellement grammaticales.
 Il y a plusieurs types de features qui ont été calculées grâce à différents outils de tal: les regex ainsi que les librairies python [Spacy](https://spacy.io/) et [NLTL](http://www.nltk.org/), elles sont expliquées ainsi que leur méthode de calcul ci-dessous. 
@@ -268,3 +268,17 @@ Cette feature comptabilise le nombre de mots du registre courant, c'est-à-dire 
 Enfin, les features biais sont des features qui ne dépendent pas du style rédactionnel des articles. Celles-ci servent à vérifier que l'algorithme renvoit effectivement des résultats sur le style rédactionnel donc sur toutes les features sauf celles-ci. En effet, "elles ne servent à rien" dans la mesure où le but est qu'elles ne transparaissent pas dans les résultats finaux. Ainsi, les distributions des lettres *e*, *l*, *a*, *o*, *u*, *i* et *n*, qui sont les lettres les plus récurrentes de la langue française, ont été choisies comme features biais. Effectivement, la distribution de ces lettres ne devrait pas dépendre du style rédactionnel, du moins dans le cadre d'articles de presse.
 ### 7.2. Méthode de calcul<a name="biais-calcul"></a>
 Pour ne pas rendre cette mesure trop dépendante de la longueur des texts, la distribution des lettres n'a été calculée sur seulement les 100 premiers charactères des textes. 
+
+## 8. Les différents critères de filtrage des stories<a name="filtre"></a>
+Le filtrage des stories qui est réalisé par la suite du calcul des valeurs des features se réalise en partie sur celles-ci. Les stories filtrées ne sont pas utilisées pour la suite dans les calculs. Voici la liste de tous les critères qui font que les stories sont filtrées:
+** Une story est filtrée ... **
+ - si elle est issue d'un media paywallé;
+ - si elle est issue d'un media partiellement paywallé mais fait moins de 1000 charactères;
+ - si elle est écrite dans une autre langue;
+ - si elle a une valeur pour la feature ARI incohérente, c'est-à-dire négative ou plus que 20;
+ - si elle ne contiennt pas de mots;
+ - si elle a moins de 4 phrases;
+ - si elle a moins 250 mots ou plus de 1500 mots pour normaliser la longueur des texts étudiés;
+ - si elle est issue d'un média pas suffisement représenté dans les données, c'est à dire d'un média qui comptabilise moins de 20 stories.
+ 
+ 
