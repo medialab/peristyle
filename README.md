@@ -19,11 +19,11 @@ Dans le dossier [**docs**](#docs) se trouvent tous les éléments de documentati
 - [features-documentation.md](#docs/features-documentation.md): ce document explique comment sont calculées toutes les features du projet;
 - [features-list.md](#docs/features-list.md): ce document résume toutes les features du projet;
 - [features-extraction.md](#docs/features-extraction.md): ce document recense toutes les directions de recherches potentielles;
-- [notes.md](#docs/notes.md): document des notes.
+- [notes.md](#docs/notes.md): document de notes.
 
 ## Application
 
-Lien vers l'interface d'exploration de l'espace stylistique: <a href="https://medialab.github.io/peristyle/">https://medialab.github.io/peristyle/</a>
+Lien vers l'interface d'exploration de l'espace stylistique: <a href="https://medialab.github.io/peristyle/">https://medialab.github.io/peristyle/</a>. Le code de celle-ci se trouve dans le dossier [**Application**](#Application)
 Cette application est une représentation de l'espace stylistique dans lequel les articles et médias sont projetés. 
 - les petits points sont les articles;
 - les gros points sont les médias;
@@ -31,7 +31,7 @@ Cette application est une représentation de l'espace stylistique dans lequel le
 
 
 Les couleurs quant à elles, correspondent aux médias dont sont issus les articles.<br>
-Sur la droite de l'écran, les paramètres d'affichage permettent d'ajencer la visualisation de l'espace en choisissant les dimensions voulues sur les axes. En dessous, une boite présente des informations sur l'élément séléctionné, nottament les liens vers les articles.
+Sur la droite de l'écran, les paramètres d'affichage permettent d'ajencer la visualisation de l'espace en choisissant les dimensions voulues sur les axes. En dessous, une boite présente des informations sur l'élément séléctionné, notamment les liens vers les articles.
 
 ## Le drive Péristyle
 
