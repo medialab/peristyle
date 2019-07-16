@@ -271,7 +271,7 @@ Pour ne pas rendre cette mesure trop dépendante de la longueur des texts, la di
 
 ## 8. Les différents critères de filtrage des stories<a name="filtre"></a>
 Le filtrage des stories qui est réalisé par la suite du calcul des valeurs des features se réalise en partie sur celles-ci. Les stories filtrées ne sont pas utilisées pour la suite dans les calculs. Voici la liste de tous les critères qui font que les stories sont filtrées:
-** Une story est filtrée ... **
+**Une story est filtrée ...**
  - si elle est issue d'un media paywallé;
  - si elle est issue d'un media partiellement paywallé mais fait moins de 1000 charactères;
  - si elle est écrite dans une autre langue;
