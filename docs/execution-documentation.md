@@ -1,5 +1,5 @@
 # Documentation pour l'exécution du projet
-Sont documentés ici tous les éléments nécessaires à la réalihttps://github.com/medialab/peristylesation de la méthodologie du projet Péristyle. 
+Sont documentés ici tous les éléments nécessaires à la réalisation de la méthodologie du projet Péristyle. 
 Le projet Péristyle nécessite des éléments de plusieurs types, notamment des scripts de code python, des fichiers json et scripts jupyter pour la visualisation et finalement des fichies csv avec les résultats. Tous ces éléments sont rangés en fonction de leur type dans un dossier nommé "Péristyle". Cette documentation explicite ce classement ainsi que les protocoles d'utilisation des différents éléments, afin de rendre les résultats reproductibles.
 Il ne s'agit pas du détail des scripts, ni la justification de la méthodologie mais le protocole réalisé pour ce projet. Pour permettre la reproduction des résultats obtenus, cette documentation se découpe en trois parties:
   - [Organisation du dossier "Péristyle"](#organisation-dossier)
