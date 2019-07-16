@@ -16,8 +16,8 @@ Les résultats du projet prennent plusieurs formes de visualisation. D'une part 
   Note nomenclature: le projet fonctionne pour une réduction en 3 ou 2 dimensions. Ainsi, presque tous les fichiers résultats sont en double, une version avec "_2D" à la fin du nom pour indiquer que ce sont les résultats pour une réduction en 2 dimensions et l'autre avec "_3D" à la fin du nom pour une réduction en 3 dimensions.
 #### Tables: les résultats manuscrits en tableau
 Le sous-dossier tables contient tous les fichiers CSV produits par le projet. La description de chaque table est détaillée dans la section [Les tables](#les-tables) 
-#### Visualisation: les résultats visualisables
-Cette partie des résultats est à exécuter avec un notebook jupyter. En effet, cella permet d'exécuter avec VegaLite et donc de donner de nouvelles formes aux résultats et de les rendre interractifs. La description de chaque visualisation est détaillée dans la section [Avec jupyter](#avec-jupyter).
+#### Notebooks: les résultats visualisables
+Cette partie des résultats est à exécuter avec un notebook jupyter. En effet, les notebooks permettent d'utiliser VegaLite et donc de donner de nouvelles formes aux résultats et de les rendre interractifs. La description de chaque visualisation est détaillée dans la section [Avec jupyter](#avec-jupyter).
 ##### Data
 Ce sous dossier contient tous les fichiers json avec les données nécessaires pour exécuter les scripts jupyter.
 ##### Views
@@ -48,7 +48,10 @@ Ce dossier contient la visualisation topic mdoeling faite avec cortext ainsi que
     ["ARI","nb_sent","nb_word","nb_char","mean_cw","mean_ws","median_cw","median_ws","shortwords_prop","longwords_prop","max_len_word","dictwords_prop","proper_noun_prop","negation_prop1","negation_prop2","subjectivity_prop1","subjectivity_prop2","interpellation_prop1","interpellation_prop2","nous_prop1","nous_prop2","verb_prop","past_verb_cardinality","pres_verb_cardinality","fut_verb_cardinality","imp_verb_cardinality","other_verb_cardinality","past_verb_prop","pres_verb_prop","fut_verb_prop","imp_verb_prop","plur_verb_prop","sing_verb_prop","tenses_diversity","conditional_prop","question_prop","exclamative_prop","quote_prop","bracket_prop","noun_prop","cconj_prop","sconj_prop","pronp_prop","adj_prop","adv_prop","a","e","i","l","n","o","sttr","comma_prop","numbers_prop","level0_prop","level1_prop","level2_prop","autre_prop","ner_prop","person_prop","norp_prop","fac_prop","org_prop","gpe_prop","loc_prop","product_prop","event_prop"] 
     
 (cf l'autre partie de la documentation pour plus d'explications)
-  
+
+***Il nécessite d'avoir le repo NLP à sa racine pour pouvoir être exécuté correctement.***
+
+
   **2. filter_sample.py**
   
   Ce script filtre les stories en fonction de différents critères dont une partie se base sur les valeurs de quelques features calculée précedemment. Les stories qui ne répondent pas aux critères sont taggées comme "filtered" et sont par la suite ignorée.
@@ -86,6 +89,18 @@ Ce dossier contient la visualisation topic mdoeling faite avec cortext ainsi que
 Dans cette section vous trouverez les détails des différents fichiers contenant des résultats. 
 
 ### Les tables<a name="les-tables"></a>
+  - sources.csv & paywall.csv: méta-informations sur les médias;
+  - sources_update.csv & wheel_tuned_full.csv: méta-informations sur les médias mises à jour avec la roue des médias;
+  - sample_normalized_sorted.csv: méta-informations sur toutes les stories;
+  - sample_with_features.csv: stories avec toutes les valeurs des features calculées; 
+  - sample_filtered_with_features.csv: même chose que au dessus mais avec un tag "filtered" en plus; 
+  - media_with_mean_features.csv: résultat des valeurs des features pour les médias renvoyé par le script join_media_features.py;
+  - medias_with_distance_to_barycenters_(3D/2D).csv: distribution des médias dans l'espace stylistique ainsi que leur distance au barycentre de leur quartile;
+  - stories_with_distances_to_barycenters_(3D/2D).csv: distribution des stories dans l'espace stylistique ainsi que leur distance au barycentre de leur quartile;
+  - text_near_barycenters_extraction_(3D/2D).csv: extraction des textes les plus proches des barycentres;
+  - topic_distribution.csv & topic_stories_examples.csv: distribution des topics dans l'espace stylistique ainsi que des exemples de stories pour chaqe topic;
+  - media_clustered_3D.csv: résultat du clustering umap;
+  - bloc_stories_distribution.csv: distribution des bloc dans l'espace stylistique.
 
 ### Les visualisations
 #### Avec jupyter<a name="avec-jupyter"></a>
