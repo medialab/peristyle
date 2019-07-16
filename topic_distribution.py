@@ -1,6 +1,4 @@
-import collections
 import json
-import csv
 import re
 from csv import DictReader, DictWriter
 from collections import defaultdict

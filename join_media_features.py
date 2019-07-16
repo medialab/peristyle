@@ -1,4 +1,3 @@
-import statistics
 import numpy as np
 import math
 import json
@@ -8,7 +7,6 @@ from sklearn.preprocessing import scale
 
 from collections import defaultdict
 from timeit import default_timer as timer
-
 from statistics import median, stdev, mean
 
 
@@ -166,6 +164,7 @@ for media_id in media.keys():
 
         values.append(media_row)
         writer.writerow(media_row)
+
 fd.close()
 
 with open("visualization/data/media_mean_features_data.json", "w") as f:

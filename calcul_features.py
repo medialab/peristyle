@@ -5,13 +5,11 @@ import re
 import nltk
 import ural
 import spacy
-import numpy
 import os
+
 from nltk.tokenize import sent_tokenize
 from ural import LRUTrie
-from statistics import median
-from statistics import mean
-from statistics import stdev
+from statistics import median, mean
 from collections import defaultdict
 from timeit import default_timer as timer
 from multiprocessing import Pool
@@ -58,7 +56,7 @@ csv.field_size_limit(100000000)
 #              - calcul_features(path) : is the function which call all the other function to calculate the features and returns an array with all the information in it.
 #                                        All the subfunctions calculates one proper type of features with one specific tools:
 #                                       - clean_from_html(txt) : is a function to clean the text from potential remainder of HTML;
-#                                       - pos_tagging(txt) : is the function which used spacy and its pos tagging to calculate the following features : ["dictwords_prop", "proper_noun_prop", "nb_word", "numbers_prop", "pronp_prop", "level0_prop", "level1_prop", "level2_prop", "autre_prop"];
+#                                       - pos_tagging(txt) : is the function which used spacy and its pos tagging to calculate the following features : ["dictwords_prop", "proper_noun_prop", "nb_word", "numbers_prop", "pronp_prop", "level0_prop", "level1_prop", "level2_prop", "autre_prop", ];
 #                                       - calcul_ARI(txt) : this function is mainly dedicated to calculate the ARI. However this readability metrics needs to split the text into sentences and the sentence tokenizer of spacy is really time demanding, that's why it uses NLTK.
 #                                                           It calculates the following features : ["ARI", "nb_sent", "nb_char", "mean_cw", "mean_ws", "median_cw", "median_ws", "max_len_word", "shortwords_prop", "longwords_prop"];
 #                                       - count_'something'(txt, nb_word, nb_sent) : those functions all have the same model. They use a specific regex to count its occurence in the text.
@@ -512,7 +510,7 @@ def calcul_sttr(voc_mean):
 # It calculates the features which need of spacy by going through the tokens and counting each tag.
 # Moreover it uses all the dictionaries to identifie the tokens.
 #
-def pos_tagging(txt): #calcule certaines features en utilisant le pos tagging : temps (cardinalité temps), pos, punct, negation(marche pas top)
+def pos_tagging(txt):
 
     # Tokenize the text with spacy.
     txt = str(txt)
@@ -637,13 +635,13 @@ def pos_tagging(txt): #calcule certaines features en utilisant le pos tagging : 
 # For that a letters dict is updated at each word to count the number "e", "l", "o", "a", "i" and "n".
 #
 def count_letters(letters, word):
-    elaouin=["e","l","o","a","i","n"]
+    elaouin = ["e", "l", "o", "a", "i", "n"]
 
     for char in word:
-        char=char.lower()
+        char = char.lower()
 
         if char in elaouin:
-            letters[char]+=1
+            letters[char] += 1
 
     return letters
 
@@ -662,8 +660,8 @@ def calcul_ARI(txt):
     # Sentence tokenize the entire text.
     # Then word tokenize each sentence.
     # That way, the txt variable contains a list of sentences which are themselves a list of words.
-    sentences=nltk.tokenize.sent_tokenize(txt, language="french")
-    txt=[nltk.word_tokenize(sentence) for sentence in sentences]
+    sentences = nltk.tokenize.sent_tokenize(txt, language="french")
+    txt = [nltk.word_tokenize(sentence) for sentence in sentences]
 
     # Counter initialization
     ARI = 0.0
@@ -725,23 +723,23 @@ def calcul_ARI(txt):
     # Stories with less then 3 sentences are not considered because they're must be paywalled or not stylistically interesting.
     if nb_word>0 and nb_sentence>3:
 
-        mean_cw=nb_char/nb_word
-        mean_ws=nb_word/nb_sentence
+        mean_cw = nb_char/nb_word
+        mean_ws = nb_word/nb_sentence
 
-        median_cw=median(nb_cw)
-        median_ws=median(nb_ws)
+        median_cw = median(nb_cw)
+        median_ws = median(nb_ws)
 
-        shortwords_prop=(nb_shortwords/nb_word)
-        longwords_prop=(nb_longwords/nb_word)
+        shortwords_prop = (nb_shortwords/nb_word)
+        longwords_prop = (nb_longwords/nb_word)
 
-        max_len_word=max(nb_cw)
+        max_len_word = max(nb_cw)
 
         #### ARI formula ####
-        ARI=4.71*(mean_cw)+0.5*(mean_ws)-21.43
+        ARI = 4.71 * (mean_cw) + 0.5 * (mean_ws) - 21.43
 
 
     # Result contains all the new features values and that's what is returned by the function.
-    result={}
+    result = {}
 
     result["ARI"] = ARI
     result["nb_sent"] = nb_sentence
@@ -778,7 +776,7 @@ def calcul_features(path):
     # This represent approximately 10% of the 100 000 stories initialy imported.
     try:
         with open (path[0],"r") as ft:
-            txt=ft.read()
+            txt = ft.read()
 
     except:
         print("opening failed")
@@ -789,7 +787,7 @@ def calcul_features(path):
     # Calling others functions (seen above)
     results.update(pos_tagging(txt))
     results.update(calcul_ARI(txt))
-    results.update(count_negation(txt,results["nb_word"], results["nb_sent"]))
+    results.update(count_negation(txt, results["nb_word"], results["nb_sent"]))
     results.update(count_interpellation(txt, results["nb_word"], results["nb_sent"]))
     results.update(count_nous(txt, results["nb_word"], results["nb_sent"]))
     results.update(count_subjectivity(txt, results["nb_word"],  results["nb_sent"]))
@@ -862,8 +860,8 @@ def calcul_features_id(story):
     with open ("testing_stories/sample/" + story,"r") as ft:
         txt = ft.read()
 
-    results={}
-    txt=clean_from_html(txt)
+    results = {}
+    txt = clean_from_html(txt)
     results.update(pos_tagging(txt))
     results.update(calcul_ARI(txt))
     results.update(count_negation(txt,results["nb_word"], results["nb_sent"]))

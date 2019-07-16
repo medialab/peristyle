@@ -1,14 +1,8 @@
 import csv
 import json
 import numpy as np
-import operator
 
-from collections import defaultdict
-
-from statistics import median
-from statistics import stdev
-from statistics import mean
-
+from statistics import median, stdev, mean
 from math import sqrt, pow, isclose, fabs
 from collections import defaultdict, OrderedDict
 from operator import itemgetter
@@ -54,7 +48,7 @@ from operator import itemgetter
 # --------------------------------------
 # SETTINGS
 # --------------------------------------
-INFOS = ["url", "name", "id", "politics", "level0", "level1", "level2", "webentity"]
+INFOS = ["story_id", "url", "name", "webentity", "media_id", "quarter", "distance", "distance_type", "bloc", "level_1", "level_2", "final_categories"]
 FEATURES_NAMES = ["ARI", "nb_sent", "nb_word", "nb_char", "mean_cw", "mean_ws", "shortwords_prop" , "longwords_prop" , "dictwords_prop", "proper_noun_prop", "negation_prop1", "subjectivity_prop1", "verb_prop","past_verb_prop", "pres_verb_prop", "fut_verb_prop","imp_verb_prop", "plur_verb_prop","sing_verb_prop", "conditional_prop","question_prop","exclamative_prop","quote_prop","bracket_prop","noun_prop","cconj_prop", "sconj_prop", "pronp_prop", "adj_prop","adv_prop", "sttr", "comma_prop", "numbers_prop", "level0_prop", "level1_prop", "level2_prop", "autre_prop", "ner_prop", "person_prop", "norp_prop", "fac_prop", "org_prop", "gpe_prop", "loc_prop", "product_prop", "event_prop", "interpellation_prop1", "nous_prop1"]
 nb_dimension = 3
 # --------------------------------------
@@ -641,7 +635,7 @@ def barycenters_extraction():
         fd = open("tables/stories_with_distance_to_barycenters_2D.csv", "w")
         fieldnames_dimensions = ["x", "y"]
 
-    fieldnames = fieldnames_dimensions + ["story_id", "url", "name", "webentity", "media_id", "quarter", "distance", "distance_type", "bloc", "level_1", "level_2", "final_categories"]
+    fieldnames = fieldnames_dimensions + INFOS
     writer = csv.DictWriter(fd, fieldnames = fieldnames)
     writer.writeheader()
 
