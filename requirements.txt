@@ -1,0 +1,6 @@
+# Dependencies
+langdetect == 1.0.7
+nltk == 3.4
+scikit-learn == 0.20.3
+spacy == 2.0.18
+ural == 0.6.0
