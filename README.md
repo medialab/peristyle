@@ -13,13 +13,13 @@ De plus veillez à bien avoir le ressources nlp du repository <a href="https://g
 
 ## Explication de la documentation
 
-Dans le dossier [**docs**](#docs) se trouvent tous les éléments de documentations suivant: 
+Dans le dossier [**docs**](../tree/master/docs) se trouvent tous les éléments de documentations suivant: 
 
-- [execution-documentation.md](#docs/execution-documentation.md): ce document explique comment reproduire tous les résultats du projet;  
-- [features-documentation.md](#docs/features-documentation.md): ce document explique comment sont calculées toutes les features du projet;
-- [features-list.md](#docs/features-list.md): ce document résume toutes les features du projet;
-- [features-extraction.md](#docs/features-extraction.md): ce document recense toutes les directions de recherches potentielles;
-- [notes.md](#docs/notes.md): document de notes.
+- [execution-documentation.md](../tree/master/docs/execution-documentation.md): ce document explique comment reproduire tous les résultats du projet;  
+- [features-documentation.md](..tree/master/docs/features-documentation.md): ce document explique comment sont calculées toutes les features du projet;
+- [features-list.md](../tree/master/docs/features-list.md): ce document résume toutes les features du projet;
+- [features-extraction.md](../tree/master/docs/features-extraction.md): ce document recense toutes les directions de recherches potentielles;
+- [notes.md](../tree/master/docs/notes.md): document de notes.
 
 ## Application
 
