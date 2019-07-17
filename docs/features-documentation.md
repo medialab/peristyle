@@ -280,6 +280,6 @@ Le filtrage des stories qui est réalisé par la suite du calcul des valeurs des
  - si elle ne contiennt pas de mots;
  - si elle a moins de 4 phrases;
  - si elle a moins 250 mots ou plus de 1500 mots pour normaliser la longueur des texts étudiés;
- - si elle est issue d'un média pas suffisement représenté dans les données, c'est à dire d'un média qui comptabilise moins de 20 stories.
+ - si elle est issue d'un média pas suffisamment représenté dans les données, c'est à dire d'un média qui comptabilise moins de 20 stories.
  
  
