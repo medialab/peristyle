@@ -15,11 +15,11 @@ De plus veillez à bien avoir le ressources nlp du repository <a href="https://g
 
 Dans le dossier [**docs**](https://github.com/medialab/peristyle/tree/master/docs) se trouvent tous les éléments de documentations suivant: 
 
-- [execution-documentation.md](../tree/master/docs/execution-documentation.md): ce document explique comment reproduire tous les résultats du projet;  
-- [features-documentation.md](..tree/master/docs/features-documentation.md): ce document explique comment sont calculées toutes les features du projet;
-- [features-list.md](../tree/master/docs/features-list.md): ce document résume toutes les features du projet;
-- [features-extraction.md](../tree/master/docs/features-extraction.md): ce document recense toutes les directions de recherches potentielles;
-- [notes.md](../tree/master/docs/notes.md): document de notes.
+- [execution-documentation.md](https://github.com/medialab/peristyle/blob/master/docs/execution-documentation.md): ce document explique comment reproduire tous les résultats du projet;  
+- [features-documentation.md](https://github.com/medialab/peristyle/blob/master/docs/features-documentation.md): ce document explique comment sont calculées toutes les features du projet;
+- [features-list.md](https://github.com/medialab/peristyle/blob/master/docs/features-list.md): ce document résume toutes les features du projet;
+- [features-extraction.md](https://github.com/medialab/peristyle/blob/master/docs/features-extraction.md): ce document recense toutes les directions de recherches potentielles;
+- [notes.md](https://github.com/medialab/peristyle/blob/master/docs/notes.md): document de notes.
 
 ## Application
 
