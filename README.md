@@ -13,7 +13,7 @@ De plus veillez à bien avoir le ressources nlp du repository <a href="https://g
 
 ## Explication de la documentation
 
-Dans le dossier [**docs**](../tree/master/docs) se trouvent tous les éléments de documentations suivant: 
+Dans le dossier [**docs**](https://github.com/medialab/peristyle/tree/master/docs) se trouvent tous les éléments de documentations suivant: 
 
 - [execution-documentation.md](../tree/master/docs/execution-documentation.md): ce document explique comment reproduire tous les résultats du projet;  
 - [features-documentation.md](..tree/master/docs/features-documentation.md): ce document explique comment sont calculées toutes les features du projet;
