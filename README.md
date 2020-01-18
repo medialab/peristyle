@@ -41,4 +41,4 @@ Celui-ci contient en particulier deux google slides qui décrivent l'espace styl
   - Péristyle historique est l'historique des différentes étapes pour arriver à ce résultat.
   
 ## Remerciements
-Le projet Péristyle est financé par le DIM <a href="http://www.dim-humanites-numeriques.fr">STCN</a>
+Le projet Péristyle est financé par le <a href="http://www.dim-humanites-numeriques.fr">DIM STCN</a>.
